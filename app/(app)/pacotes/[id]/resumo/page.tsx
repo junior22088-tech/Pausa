@@ -10,10 +10,10 @@ export default async function ResumoPacote({ params, searchParams }: { params: P
   const { id } = await params;
   const { erro } = await searchParams;
   const { supabase, prof } = await carregarProfissional();
-  const { data: p } = await supabase.from('pacotes').select('*, clientes(nome, telefone)').eq('id', id).maybeSingle();
+  const { data: p } = await supabase.from('pacotes').select('*, clientes(nome, telefone), servicos(nome, duracao_min)').eq('id', id).maybeSingle();
   if (!p) notFound();
   const { data: aceite } = await supabase.from('aceites').select('marcado_em, resposta_literal, hash_sha256').eq('pacote_id', id).order('versao', { ascending: false }).limit(1).maybeSingle();
-  const texto = msgResumoPacote(prof, p.clientes.nome, p.total_sessoes, p.valor_centavos, p.pago, p.validade_ate, p.regra_cancelamento);
+  const texto = msgResumoPacote(prof, p.clientes.nome, p.total_sessoes, p.valor_centavos, p.pago, p.validade_ate, p.regra_cancelamento, p.servicos);
 
   return (
     <div className="space-y-4">

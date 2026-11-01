@@ -101,15 +101,26 @@ export function msgSaldo(p: Prof, cliente: string, saldo: number, total: number,
 
 export function msgResumoPacote(
   p: Prof, cliente: string, total: number, valor: number, pago: boolean, validade: string, regra: string,
+  servico?: { nome: string; duracao_min: number } | null,
 ) {
   return [
     cabecalho(p),
     `Olá, ${cliente}! Este é o resumo do seu pacote:`,
-    `• ${total} sessões`,
+    servico ? `• ${total} sessões de ${servico.nome} (${servico.duracao_min} min)` : `• ${total} sessões`,
     `• Valor: ${reais(valor)} (${pago ? 'pago' : 'a pagar'})`,
     `• Válido até ${dataPorExtenso(validade, false)}`,
     `• ${regra}`,
     'Se estiver de acordo, responda *ACEITO*.',
     'Se tiver dúvida, é só me escrever.',
+  ].join('\n');
+}
+
+/** Aviso de que a sessão precisa ser remarcada (folga ou bloqueio na agenda). */
+export function msgRemarcarPorFolga(p: Prof, cliente: string, inicio: string) {
+  return [
+    cabecalho(p),
+    `Olá, ${cliente}! Precisei bloquear minha agenda e não vou conseguir atender na sua sessão de`,
+    `*${dataPorExtenso(inicio)}, às ${hora(inicio)}*.`,
+    'Podemos remarcar? Me diga um dia e horário que fica bom para você.',
   ].join('\n');
 }

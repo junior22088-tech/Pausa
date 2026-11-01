@@ -21,7 +21,16 @@ Toque em **Ajustes**, no topo, e preencha:
 - **Endereço no lembrete** (opcional): vai no lembrete da sessão.
 - **Regra de cancelamento dos pacotes**: o texto que vai no resumo do pacote. Já vem um texto padrão; ajuste do seu jeito.
 
-## 3. O dia a dia
+## 3. Serviços e horários (3 minutos)
+
+Ainda em **Ajustes**:
+
+- **Serviços**: cadastre o que você faz, com a duração (ex. Massagem relaxante, 60 min).
+- **Horários**: confira os dias e horários de atendimento, o almoço e o intervalo entre sessões.
+
+Sem isso a agenda não sabe quanto tempo cada sessão ocupa. Detalhes em [serviços, horários e folgas](/wiki/tutoriais/horarios-e-servicos).
+
+## 4. O dia a dia
 
 Na parte de baixo da tela há três abas:
 

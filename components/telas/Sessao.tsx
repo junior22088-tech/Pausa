@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import { CalendarClock, Check, ChevronDown, ChevronLeft, CircleDollarSign, MessageCircle, RotateCcw, XCircle } from 'lucide-react';
-import { Avatar, Aviso, Chip, btnPerigo, btnPrimario, btnSecundario, btnTexto, campo, rotulo } from '@/components/ui';
+import { CalendarClock, Check, ChevronDown, ChevronLeft, ChevronRight, CircleDollarSign, MessageCircle, RotateCcw, XCircle } from 'lucide-react';
+import { Avatar, Aviso, Chip, btnPequeno, btnPerigo, btnPrimario, btnSecundario, btnTexto, rotulo } from '@/components/ui';
 import { Enviar } from '@/components/Enviar';
 import { WhatsAppButton } from '@/components/WhatsAppButton';
 
@@ -12,6 +12,9 @@ export type SessaoDados = {
   descontada: boolean; temPacote: boolean; saldoPacote: number | null;
   valorAvulso: string | null; pago: boolean;
   lembreteAberto: boolean; whatsappHref: string;
+  servico?: string | null; fim?: string | null;
+  /** A sessão cai numa folga/bloqueio: texto do motivo e link do aviso no WhatsApp. */
+  folga?: { texto: string; avisoHref: string } | null;
 };
 
 type Acao = (fd: FormData) => Promise<void>;
@@ -34,11 +37,11 @@ function OutraAcao({ icone, titulo, descricao, perigo = false, children }: { ico
 }
 
 export function TelaSessao({
-  s, erro, sessaoFeita, desfazerFeita, remarcarSessao, cancelarSessao, registrarLembrete,
+  s, erro, sessaoFeita, desfazerFeita, cancelarSessao, registrarLembrete, registrarAvisoFolga,
 }: {
   s: SessaoDados; erro?: string;
-  sessaoFeita: Acao; desfazerFeita: Acao; remarcarSessao: Acao; cancelarSessao: Acao;
-  registrarLembrete: () => Promise<void>;
+  sessaoFeita: Acao; desfazerFeita: Acao; remarcarSessao?: Acao; cancelarSessao: Acao;
+  registrarLembrete: () => Promise<void>; registrarAvisoFolga?: () => Promise<void>;
 }) {
   const estado = s.situacao === 'feita'
     ? <Chip tom="verde"><Check className="size-3.5" aria-hidden />Feita</Chip>
@@ -63,16 +66,32 @@ export function TelaSessao({
           </span>
         </Link>
         <div className="mt-4 border-t border-stone-100 pt-4">
-          <h1 className="text-[2rem] font-bold leading-none tracking-tight tabular-nums">{s.hora}</h1>
+          <h1 className="text-[2rem] font-bold leading-none tracking-tight tabular-nums">{s.hora}{s.fim && <span className="text-[1.1rem] font-semibold text-stone-400"> às {s.fim}</span>}</h1>
           <p className="mt-1 text-base text-stone-600 first-letter:uppercase">{s.diaExtenso}</p>
           <div className="mt-3 flex flex-wrap gap-1.5">
             {estado}
+            {s.servico && <Chip>{s.servico}</Chip>}
             <Chip>{s.temPacote ? 'Pacote' : `Avulsa${s.valorAvulso ? ` · ${s.valorAvulso}` : ''}`}</Chip>
             {!s.temPacote && s.situacao === 'feita' && (s.pago ? <Chip tom="verde">Paga</Chip> : <Chip tom="vermelho">Não paga</Chip>)}
             {s.lembreteAberto && s.situacao === 'marcada' && <Chip><MessageCircle className="size-3.5" aria-hidden />Lembrete enviado</Chip>}
           </div>
         </div>
       </section>
+
+      {s.folga && s.situacao === 'marcada' && (
+        <div role="alert" className="rounded-2xl bg-amber-50 p-3 ring-1 ring-amber-200">
+          <p className="text-[0.9rem] font-semibold text-amber-950">Esta sessão cai numa folga: {s.folga.texto}.</p>
+          <p className="mb-2 text-[0.85rem] text-amber-900">Avise o cliente e remarque.</p>
+          <div className="flex gap-2">
+            {registrarAvisoFolga && (
+              <WhatsAppButton className={`${btnSecundario} ${btnPequeno} flex-1`} href={s.folga.avisoHref} registrar={registrarAvisoFolga}>
+                <MessageCircle className="size-4" aria-hidden />Avisar
+              </WhatsAppButton>
+            )}
+            <Link href={`/sessoes/${s.id}/remarcar`} className={`${btnPrimario} ${btnPequeno} flex-1`}>Remarcar</Link>
+          </div>
+        </div>
+      )}
 
       {/* Ação principal */}
       {s.situacao === 'marcada' && (
@@ -101,16 +120,14 @@ export function TelaSessao({
           <div className="divide-y divide-stone-100 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-stone-200/80">
             {s.situacao === 'marcada' && (
               <>
-                <OutraAcao icone={<CalendarClock className="size-[1.1rem]" aria-hidden />} titulo="Remarcar" descricao="Trocar dia ou horário">
-                  <form action={remarcarSessao} className="space-y-3">
-                    <input type="hidden" name="id" value={s.id} />
-                    <div className="grid gap-3">
-                      <label><span className={rotulo}>Novo dia</span><input type="date" name="dia" defaultValue={s.diaISO} className={campo} required /></label>
-                      <label><span className={rotulo}>Novo horário</span><input type="time" name="hora" defaultValue={s.hora} step={900} className={campo} required /></label>
-                    </div>
-                    <Enviar className={`${btnPrimario} w-full`}>Salvar novo horário</Enviar>
-                  </form>
-                </OutraAcao>
+                <Link href={`/sessoes/${s.id}/remarcar`} className="flex min-h-16 items-center gap-3 px-4 py-3 hover:bg-stone-50">
+                  <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-stone-100 text-stone-600"><CalendarClock className="size-[1.1rem]" aria-hidden /></span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-base font-semibold text-stone-900">Remarcar</span>
+                    <span className="block text-[0.8rem] text-stone-500">Escolher outro horário livre</span>
+                  </span>
+                  <ChevronRight className="size-5 shrink-0 text-stone-400" aria-hidden />
+                </Link>
                 <OutraAcao perigo icone={<XCircle className="size-[1.1rem]" aria-hidden />} titulo="Cancelar sessão" descricao="Sai da agenda; fica no histórico">
                   <form action={cancelarSessao} className="space-y-3">
                     <input type="hidden" name="id" value={s.id} />

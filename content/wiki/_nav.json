@@ -20,6 +20,10 @@
         "titulo": "Primeiros passos"
       },
       {
+        "slug": "tutoriais/horarios-e-servicos",
+        "titulo": "Serviços, horários e folgas"
+      },
+      {
         "slug": "tutoriais/instalar-no-celular",
         "titulo": "Instalar no celular"
       },

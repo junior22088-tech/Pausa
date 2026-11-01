@@ -6,6 +6,8 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { createClient, requireUser } from '@/lib/supabase/server';
 import { exigirLicenca } from '@/lib/licenca';
+import { conflito, hhmm, horariosLivres, minutosSP, paraMin, proximosLivres } from '@/lib/agenda-horarios';
+import { configAgenda, sessoesDoDia } from '@/lib/agenda-dados';
 import { instanteSP, normalizarTelefone, paraCentavos, reais, somarDias, diaSP } from '@/lib/format';
 
 type Supa = Awaited<ReturnType<typeof createClient>>;
@@ -198,9 +200,11 @@ export async function criarPacote(fd: FormData) {
   if (!Number.isFinite(valor) || valor < 0) falhou('Confira o valor do pacote.', voltar);
   if (!Number.isInteger(diasValidade) || diasValidade < 1 || diasValidade > 730) falhou('Validade entre 1 e 730 dias.', voltar);
 
+  const servico_id = texto(fd, 'servico_id') || null;
   const { data: prof } = await supabase.from('profissionais').select('regra_cancelamento').eq('id', user.id).single();
   const { data, error } = await supabase.from('pacotes').insert({
     cliente_id,
+    servico_id,
     total_sessoes: total,
     valor_centavos: valor,
     validade_ate: somarDias(diaSP(), diasValidade),
@@ -268,47 +272,87 @@ export async function marcarDesistencia(fd: FormData) {
 
 // ---------------------------------------------------------------- Sessões
 async function pacoteAtivo(supabase: Supa, clienteId: string) {
-  const { data } = await supabase.from('pacotes_saldo').select('id, saldo, validade_ate, situacao')
+  const { data } = await supabase.from('pacotes_saldo').select('id, saldo, validade_ate, situacao, servico_id')
     .eq('cliente_id', clienteId).in('situacao', ['aguardando_aceite', 'aceito'])
     .gte('validade_ate', diaSP()).gt('saldo', 0).order('criado_em', { ascending: true }).limit(1).maybeSingle();
   return data;
 }
 
+/**
+ * Confere se `dia hora` está livre para `duracao` (+ intervalo). Se não estiver, volta com o aviso
+ * de conflito e os próximos horários livres. `ignorarId` = a própria sessão, ao remarcar.
+ */
+async function exigirHorarioLivre(
+  supabase: Supa, userId: string, dia: string, hora: string, duracao: number, intervalo: number, voltar: string, ignorarId?: string,
+) {
+  const cfg = await configAgenda(supabase, userId);
+  const ocupados = await sessoesDoDia(supabase, dia);
+  const t = paraMin(hora);
+  const c = conflito(ocupados, t, duracao, intervalo, ignorarId);
+  const livres = horariosLivres({ dia, duracao, intervalo, semana: cfg.semana, bloqueios: cfg.bloqueios, ocupados, ignorarId,
+    agoraMin: dia === diaSP() ? minutosSP(new Date()) : null });
+  const sugestao = proximosLivres(livres, t).map(hhmm).join(', ');
+  if (c) {
+    falhou(`Conflito: ${hhmm(c.inicio)} às ${hhmm(c.fimAtendimento ?? c.fim)} já está ocupado por ${c.nome}${c.servico ? ` (${c.servico})` : ''}, com intervalo até ${hhmm(c.fim)}.${sugestao ? ` Livres a seguir: ${sugestao}.` : ''}`, voltar);
+  }
+  if (!livres.normais.includes(t) && !livres.fora.includes(t)) {
+    falhou(livres.motivo === 'folga' ? 'Esse dia está marcado como folga.' : `Esse horário não está mais livre.${sugestao ? ` Livres a seguir: ${sugestao}.` : ''}`, voltar);
+  }
+}
+
+/** Erro de sobreposição vindo da trava do banco (dois aparelhos marcando ao mesmo tempo). */
+const ehConflitoNoBanco = (e: { code?: string } | null) => e?.code === '23P01';
+
 export async function marcarSessao(fd: FormData) {
-  const { supabase } = await escritor();
+  const { supabase, user } = await escritor();
   const cliente_id = texto(fd, 'cliente_id');
+  const servico_id = texto(fd, 'servico_id') || null;
   const dia = texto(fd, 'dia');
   const h = texto(fd, 'hora');
-  const voltar = `/agenda/nova?dia=${dia}`;
+  const voltar = `/agenda/nova?cliente=${cliente_id}${servico_id ? `&servico=${servico_id}` : ''}&dia=${dia}`;
   if (!cliente_id) falhou('Escolha o cliente.', voltar);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(dia) || !/^\d{2}:\d{2}$/.test(h)) falhou('Escolha dia e horário.', voltar);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dia) || !/^\d{2}:\d{2}$/.test(h)) falhou('Escolha o dia e um dos horários livres.', voltar);
+
   // Toque duplo ou envio repetido: não cria a mesma sessão duas vezes.
   const { data: repetida } = await supabase.from('sessoes').select('id')
     .eq('cliente_id', cliente_id).eq('inicio', instanteSP(dia, h)).eq('situacao', 'marcada').limit(1).maybeSingle();
   if (repetida) redirect(`/agenda?dia=${dia}`);
+
+  const cfg = await configAgenda(supabase, user.id);
+  const servico = cfg.servicos.find((x) => x.id === servico_id) ?? null;
+  const duracao = servico?.duracao_min ?? 60;
+  await exigirHorarioLivre(supabase, user.id, dia, h, duracao, cfg.intervalo, voltar);
+
   const pacote = await pacoteAtivo(supabase, cliente_id);
-  const valorAvulso = texto(fd, 'valor') ? paraCentavos(texto(fd, 'valor')) : null;
+  const valorDigitado = texto(fd, 'valor') ? paraCentavos(texto(fd, 'valor')) : null;
+  const valorAvulso = pacote ? null : (valorDigitado ?? servico?.preco_centavos ?? null);
   const { data, error } = await supabase.from('sessoes').insert({
-    cliente_id, inicio: instanteSP(dia, h), pacote_id: pacote?.id ?? null,
-    valor_avulso_centavos: pacote ? null : valorAvulso,
+    cliente_id, servico_id: servico?.id ?? null, inicio: instanteSP(dia, h), duracao_min: duracao, intervalo_min: cfg.intervalo,
+    pacote_id: pacote?.id ?? null, valor_avulso_centavos: valorAvulso,
   }).select('id').single();
+  if (ehConflitoNoBanco(error)) falhou('Conflito: esse horário acabou de ser ocupado. Escolha outro.', voltar);
   if (error || !data) falhou('Não foi possível marcar a sessão.', voltar);
-  await evento(supabase, { cliente_id, entidade: 'sessao', entidade_id: data.id, tipo: 'criou', descricao: `Sessão marcada para ${dia.split('-').reverse().join('/')} às ${h}${pacote ? ' (pacote)' : ' (avulsa)'}` });
+  const rotulo = `${servico ? `${servico.nome}, ` : ''}${ddmm(dia)} às ${h}${pacote ? ' (pacote)' : ' (avulsa)'}`;
+  await evento(supabase, { cliente_id, entidade: 'sessao', entidade_id: data.id, tipo: 'criou', descricao: `Sessão marcada: ${rotulo}` });
   revalidatePath('/', 'layout');
-  redirect(feito(`/agenda?dia=${dia}`, `Sessão marcada para ${ddmm(dia)} às ${h}${pacote ? ' (pacote)' : ' (avulsa)'}.`));
+  redirect(feito(`/agenda?dia=${dia}`, `Sessão marcada: ${rotulo}.`));
 }
 
 export async function remarcarSessao(fd: FormData) {
-  const { supabase } = await escritor();
+  const { supabase, user } = await escritor();
   const id = texto(fd, 'id');
   const dia = texto(fd, 'dia');
   const h = texto(fd, 'hora');
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(dia) || !/^\d{2}:\d{2}$/.test(h)) falhou('Escolha dia e horário.', `/sessoes/${id}`);
-  const { data: antes } = await supabase.from('sessoes').select('cliente_id, inicio').eq('id', id).single();
+  const voltar = `/sessoes/${id}/remarcar?dia=${dia}`;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dia) || !/^\d{2}:\d{2}$/.test(h)) falhou('Escolha o dia e um dos horários livres.', voltar);
+  const { data: antes } = await supabase.from('sessoes').select('cliente_id, inicio, duracao_min, intervalo_min').eq('id', id).single();
   if (!antes) falhou('Sessão não encontrada.', '/agenda');
+  await exigirHorarioLivre(supabase, user.id, dia, h, antes.duracao_min, antes.intervalo_min, voltar, id);
   const inicio = instanteSP(dia, h);
-  await supabase.from('sessoes').update({ inicio, lembrete_aberto_em: null }).eq('id', id);
-  await evento(supabase, { cliente_id: antes.cliente_id, entidade: 'sessao', entidade_id: id, tipo: 'corrigiu', descricao: `Sessão remarcada para ${dia.split('-').reverse().join('/')} às ${h}`, antes: { inicio: antes.inicio }, depois: { inicio } });
+  const { error } = await supabase.from('sessoes').update({ inicio, lembrete_aberto_em: null }).eq('id', id);
+  if (ehConflitoNoBanco(error)) falhou('Conflito: esse horário acabou de ser ocupado. Escolha outro.', voltar);
+  if (error) falhou('Não foi possível remarcar.', voltar);
+  await evento(supabase, { cliente_id: antes.cliente_id, entidade: 'sessao', entidade_id: id, tipo: 'corrigiu', descricao: `Sessão remarcada para ${ddmm(dia)} às ${h}`, antes: { inicio: antes.inicio }, depois: { inicio } });
   revalidatePath('/', 'layout');
   redirect(feito(`/sessoes/${id}`, `Sessão remarcada para ${ddmm(dia)} às ${h}.`));
 }
@@ -360,14 +404,14 @@ export async function desfazerFeita(fd: FormData) {
 }
 
 /** Chamado antes de abrir o WhatsApp com um lembrete ou saldo. */
-export async function registrarWhatsApp(sessaoId: string, tipo: 'lembrete' | 'saldo' | 'saldo_corrigido') {
+export async function registrarWhatsApp(sessaoId: string, tipo: 'lembrete' | 'saldo' | 'saldo_corrigido' | 'aviso_folga') {
   const { supabase } = await requireUser();
   const { data: s } = await supabase.from('sessoes').select('cliente_id').eq('id', sessaoId).single();
   if (!s) return;
   if (tipo === 'lembrete') await supabase.from('sessoes').update({ lembrete_aberto_em: new Date().toISOString() }).eq('id', sessaoId);
   await evento(supabase, {
     cliente_id: s.cliente_id, entidade: 'sessao', entidade_id: sessaoId, tipo: 'abriu_whatsapp',
-    descricao: tipo === 'lembrete' ? 'Lembrete aberto no WhatsApp' : tipo === 'saldo' ? 'Saldo aberto no WhatsApp' : 'Saldo corrigido aberto no WhatsApp',
+    descricao: tipo === 'lembrete' ? 'Lembrete aberto no WhatsApp' : tipo === 'saldo' ? 'Saldo aberto no WhatsApp' : tipo === 'aviso_folga' ? 'Aviso de folga (pedido para remarcar) aberto no WhatsApp' : 'Saldo corrigido aberto no WhatsApp',
   });
   revalidatePath('/', 'layout');
 }
@@ -422,6 +466,89 @@ export async function anularPagamento(fd: FormData) {
   await evento(supabase, { cliente_id: pg.cliente_id, entidade: 'pagamento', entidade_id: id, tipo: 'anulou', descricao: `Correção: pagamento de ${reais(pg.valor_centavos)} anulado` });
   revalidatePath('/', 'layout');
   redirect(feito(`/clientes/${pg.cliente_id}?aba=pagamentos`, 'Pagamento anulado. Ficou riscado no histórico.'));
+}
+
+// ---------------------------------------------------------------- Agenda: serviços, horários, folgas
+export async function salvarServico(fd: FormData) {
+  const { supabase } = await escritor();
+  const id = texto(fd, 'id');
+  const nome = texto(fd, 'nome');
+  const duracao = Number(texto(fd, 'duracao'));
+  const precoTxt = texto(fd, 'preco');
+  const preco = precoTxt ? paraCentavos(precoTxt) : null;
+  const voltar = id ? `/ajustes/servicos?editar=${id}` : '/ajustes/servicos?novo=1';
+  if (!nome) falhou('Dê um nome ao serviço.', voltar);
+  if (!Number.isInteger(duracao) || duracao < 10 || duracao > 480) falhou('Escolha a duração.', voltar);
+  if (preco !== null && (!Number.isFinite(preco) || preco < 0)) falhou('Confira o preço.', voltar);
+  const dados = { nome, duracao_min: duracao, preco_centavos: preco, ativo: true };
+  const { error } = id
+    ? await supabase.from('servicos').update(dados).eq('id', id)
+    : await supabase.from('servicos').insert(dados);
+  if (error) falhou('Não foi possível salvar o serviço.', voltar);
+  revalidatePath('/', 'layout');
+  redirect(feito('/ajustes/servicos', id ? `${nome} atualizado. Sessões já marcadas mantêm a duração antiga.` : `${nome} (${duracao} min) cadastrado.`));
+}
+
+export async function desativarServico(fd: FormData) {
+  const { supabase } = await escritor();
+  const id = texto(fd, 'id');
+  const { data } = await supabase.from('servicos').update({ ativo: false }).eq('id', id).select('nome').single();
+  revalidatePath('/', 'layout');
+  redirect(feito('/ajustes/servicos', `${data?.nome ?? 'Serviço'} removido da lista. O histórico continua.`));
+}
+
+export async function salvarHorarios(fd: FormData) {
+  const { supabase, user } = await escritor();
+  const voltar = '/ajustes/horarios';
+  const intervalo = Number(texto(fd, 'intervalo'));
+  if (!Number.isInteger(intervalo) || intervalo < 0 || intervalo > 120) falhou('Escolha o intervalo entre sessões.', voltar);
+  const NOMES = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+  const linhas = [];
+  for (let d = 0; d < 7; d++) {
+    const atende = fd.get(`atende_${d}`) === 'on';
+    const ini = paraMin(texto(fd, `inicio_${d}`) || '09:00');
+    const fim = paraMin(texto(fd, `fim_${d}`) || '18:00');
+    const temAlmoco = fd.get(`almoco_${d}`) === 'on';
+    const aIni = temAlmoco ? paraMin(texto(fd, `almoco_inicio_${d}`) || '12:00') : null;
+    const aFim = temAlmoco ? paraMin(texto(fd, `almoco_fim_${d}`) || '13:00') : null;
+    if (atende && fim <= ini) falhou(`Na ${NOMES[d]}, o fim precisa ser depois do início.`, voltar);
+    if (atende && aIni !== null && aFim !== null && (aFim <= aIni || aIni < ini || aFim > fim)) falhou(`Na ${NOMES[d]}, o almoço precisa ficar dentro do horário de atendimento.`, voltar);
+    linhas.push({ profissional_id: user.id, dia_semana: d, atende, inicio_min: ini, fim_min: fim, almoco_inicio_min: aIni, almoco_fim_min: aFim });
+  }
+  const { error } = await supabase.from('horarios_semana').upsert(linhas);
+  if (error) falhou('Não foi possível salvar os horários.', voltar);
+  await supabase.from('profissionais').update({ intervalo_min: intervalo }).eq('id', user.id);
+  revalidatePath('/', 'layout');
+  redirect(feito('/ajustes/horarios', `Horários salvos. Intervalo entre sessões: ${intervalo} min.`));
+}
+
+export async function criarBloqueio(fd: FormData) {
+  const { supabase } = await escritor();
+  const voltar = '/ajustes/folgas?nova=1';
+  const inicio = texto(fd, 'data_inicio');
+  const fim = texto(fd, 'data_fim') || inicio;
+  const diaInteiro = texto(fd, 'dia_inteiro') !== 'nao';
+  const motivo = texto(fd, 'motivo').slice(0, 120) || null;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(inicio) || !/^\d{4}-\d{2}-\d{2}$/.test(fim)) falhou('Escolha a data.', voltar);
+  if (fim < inicio) falhou('A data final precisa ser igual ou depois da inicial.', voltar);
+  const hIni = diaInteiro ? null : paraMin(texto(fd, 'inicio') || '00:00');
+  const hFim = diaInteiro ? null : paraMin(texto(fd, 'fim') || '00:00');
+  if (!diaInteiro && (hFim! <= hIni!)) falhou('O horário final precisa ser depois do inicial.', voltar);
+  const { data, error } = await supabase.from('bloqueios').insert({
+    data_inicio: inicio, data_fim: fim, dia_inteiro: diaInteiro, inicio_min: hIni, fim_min: hFim, motivo,
+  }).select('id').single();
+  if (error || !data) falhou('Não foi possível registrar a folga.', voltar);
+  revalidatePath('/', 'layout');
+  const periodo = inicio === fim ? ddmm(inicio) : `${ddmm(inicio)} a ${ddmm(fim)}`;
+  redirect(feito(`/ajustes/folgas?ver=${data.id}`, `Folga registrada: ${periodo}${diaInteiro ? '' : `, ${hhmm(hIni!)} às ${hhmm(hFim!)}`}.`));
+}
+
+export async function removerBloqueio(fd: FormData) {
+  const { supabase } = await escritor();
+  const id = texto(fd, 'id');
+  await supabase.from('bloqueios').delete().eq('id', id);
+  revalidatePath('/', 'layout');
+  redirect(feito('/ajustes/folgas', 'Folga removida. Os horários voltaram a ficar livres.'));
 }
 
 // ---------------------------------------------------------------- Licença

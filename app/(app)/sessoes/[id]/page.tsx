@@ -1,15 +1,24 @@
 import { notFound } from 'next/navigation';
 import { carregarProfissional } from '@/lib/dados';
-import { dataPorExtenso, diaSP, hora, linkWhatsApp, msgLembrete, reais } from '@/lib/format';
-import { cancelarSessao, desfazerFeita, registrarWhatsApp, remarcarSessao, sessaoFeita } from '@/lib/actions';
+import { dataPorExtenso, diaSP, hora, linkWhatsApp, msgLembrete, msgRemarcarPorFolga, reais } from '@/lib/format';
+import { bloqueiosDoDia, hhmm, minutosSP } from '@/lib/agenda-horarios';
+import { cancelarSessao, desfazerFeita, registrarWhatsApp, sessaoFeita } from '@/lib/actions';
 import { TelaSessao } from '@/components/telas/Sessao';
 
 export default async function Sessao({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ erro?: string }> }) {
   const { id } = await params;
   const { erro } = await searchParams;
   const { supabase, prof } = await carregarProfissional();
-  const { data: s } = await supabase.from('sessoes').select('*, clientes(id, nome, telefone)').eq('id', id).maybeSingle();
+  const { data: s } = await supabase.from('sessoes').select('*, clientes(id, nome, telefone), servicos(nome)').eq('id', id).maybeSingle();
   if (!s) notFound();
+  // A sessão cai numa folga ou bloqueio?
+  const dia = diaSP(new Date(s.inicio));
+  const { data: bloqueios } = await supabase.from('bloqueios').select('data_inicio, data_fim, dia_inteiro, inicio_min, fim_min, motivo').lte('data_inicio', dia).gte('data_fim', dia);
+  const ini = minutosSP(s.inicio);
+  const { folgaDiaInteiro, trechos } = bloqueiosDoDia(dia, (bloqueios ?? []) as any);
+  const trecho = trechos.find(([a, b]) => ini < b && a < ini + s.duracao_min);
+  const folgaTexto = folgaDiaInteiro ? `dia inteiro${folgaDiaInteiro.motivo ? ` (${folgaDiaInteiro.motivo})` : ''}` : trecho ? `${hhmm(trecho[0])} às ${hhmm(trecho[1])}` : null;
+
   const { data: pacote } = s.pacote_id
     ? await supabase.from('pacotes_saldo').select('saldo').eq('id', s.pacote_id).maybeSingle()
     : { data: null };
@@ -30,13 +39,16 @@ export default async function Sessao({ params, searchParams }: { params: Promise
         valorAvulso: s.valor_avulso_centavos ? reais(s.valor_avulso_centavos) : null,
         pago: !!s.pago,
         lembreteAberto: !!s.lembrete_aberto_em,
+        servico: s.servicos?.nome ?? null,
+        fim: hhmm(ini + s.duracao_min),
+        folga: folgaTexto ? { texto: folgaTexto, avisoHref: linkWhatsApp(s.clientes.telefone, msgRemarcarPorFolga(prof, s.clientes.nome, s.inicio)) } : null,
         whatsappHref: linkWhatsApp(s.clientes.telefone, msgLembrete(prof, s.clientes.nome, s.inicio, 'com antecedência')),
       }}
       sessaoFeita={sessaoFeita}
       desfazerFeita={desfazerFeita}
-      remarcarSessao={remarcarSessao}
       cancelarSessao={cancelarSessao}
       registrarLembrete={registrarWhatsApp.bind(null, id, 'lembrete')}
+      registrarAvisoFolga={registrarWhatsApp.bind(null, id, 'aviso_folga')}
     />
   );
 }

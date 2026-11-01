@@ -1,11 +1,14 @@
 import { carregarProfissional } from '@/lib/dados';
 import { linkWhatsApp } from '@/lib/format';
 import { definirSenha, salvarAjustes, sair } from '@/lib/actions';
-import { Aviso, Cartao, Titulo, btnPerigo, btnPrimario, btnSecundario, campo, rotulo } from '@/components/ui';
+import { Aviso, Cartao, Lista, LinhaLista, Secao, Titulo, btnPerigo, btnPrimario, btnSecundario, campo, rotulo } from '@/components/ui';
+import { CalendarOff, Clock, KeyRound, Sparkles } from 'lucide-react';
 import { Enviar } from '@/components/Enviar';
 
-export default async function Ajustes({ searchParams }: { searchParams: Promise<{ erro?: string; salvo?: string; senha?: string }> }) {
-  const { erro, salvo, senha } = await searchParams;
+const icone = 'inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-800';
+
+export default async function Ajustes({ searchParams }: { searchParams: Promise<{ erro?: string }> }) {
+  const { erro } = await searchParams;
   const { supabase, user } = await carregarProfissional();
   const { data: p } = await supabase.from('profissionais').select('*').eq('id', user.id).single();
   const suporte = process.env.NEXT_PUBLIC_SUPORTE_WHATSAPP;
@@ -13,7 +16,17 @@ export default async function Ajustes({ searchParams }: { searchParams: Promise<
   return (
     <div className="space-y-5">
       <Titulo>Ajustes</Titulo>
-      <Aviso erro={erro} ok={senha ? 'Senha salva. Da próxima vez, entre com e-mail e senha.' : salvo ? 'Salvo.' : undefined} />
+      <Aviso erro={erro} />
+
+      <Secao titulo="Agenda">
+        <Lista>
+          <LinhaLista href="/ajustes/servicos" inicio={<span className={icone}><Sparkles className="size-5" aria-hidden /></span>} titulo="Serviços" subtitulo="Nome, duração e preço de cada atendimento" />
+          <LinhaLista href="/ajustes/horarios" inicio={<span className={icone}><Clock className="size-5" aria-hidden /></span>} titulo="Horários de atendimento" subtitulo="Dias, horários, almoço e intervalo entre sessões" />
+          <LinhaLista href="/ajustes/folgas" inicio={<span className={icone}><CalendarOff className="size-5" aria-hidden /></span>} titulo="Folgas e bloqueios" subtitulo="Dias ou horários em que você não atende" />
+        </Lista>
+      </Secao>
+
+      <Secao titulo="Suas mensagens">
       <form action={salvarAjustes} className="space-y-4">
         <label className="block"><span className={rotulo}>Seu nome nas mensagens</span><input name="nome_mensagem" defaultValue={p?.nome_mensagem} required placeholder="Ex.: Marta Souza" className={campo} /></label>
         <label className="block"><span className={rotulo}>Especialidade no cabeçalho (opcional)</span><input name="especialidade" defaultValue={p?.especialidade ?? ''} placeholder="Ex.: massoterapia" className={campo} /></label>
@@ -21,6 +34,7 @@ export default async function Ajustes({ searchParams }: { searchParams: Promise<
         <label className="block"><span className={rotulo}>Regra de cancelamento dos pacotes</span><textarea name="regra_cancelamento" defaultValue={p?.regra_cancelamento} rows={4} required className={`${campo} py-2`} /></label>
         <Enviar className={`${btnPrimario} w-full`}>Salvar</Enviar>
       </form>
+      </Secao>
 
       <Cartao>
         <h2 className="mb-2 text-lg font-bold">Seus dados</h2>
@@ -38,7 +52,9 @@ export default async function Ajustes({ searchParams }: { searchParams: Promise<
         </form>
       </Cartao>
 
-      <a href="/instalacao" className={`${btnSecundario} w-full`}>Licença desta instalação</a>
+      <Lista>
+        <LinhaLista href="/instalacao" inicio={<span className={icone}><KeyRound className="size-5" aria-hidden /></span>} titulo="Licença desta instalação" subtitulo="Validade e verificação" />
+      </Lista>
 
       <p className="text-base text-stone-500">Conectado como {user.email}</p>
       <form action={sair}><Enviar className={`${btnPerigo} w-full`}>Sair de todos os aparelhos</Enviar></form>

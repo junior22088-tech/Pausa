@@ -1,9 +1,10 @@
 // Roda a migração e o teste de isolamento num Postgres local (PGlite),
 // com um "auth" mínimo que imita o do Supabase. Uso: npm run test:db
 import { PGlite } from '@electric-sql/pglite';
+import { btree_gist } from '@electric-sql/pglite/contrib/btree_gist';
 import { readFileSync, readdirSync } from 'node:fs';
 
-const db = new PGlite();
+const db = new PGlite({ extensions: { btree_gist } });
 process.on('unhandledRejection', e => { console.error('FALHOU:', e.message, e.where ?? ''); process.exit(1); });
 await db.exec(`
   create role authenticated nologin;

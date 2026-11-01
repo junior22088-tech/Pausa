@@ -8,12 +8,23 @@ const opcao = 'flex min-h-12 flex-1 cursor-pointer items-center justify-center r
 export default async function NovoPacote({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ erro?: string }> }) {
   const { id } = await params;
   const { erro } = await searchParams;
-  const { prof } = await carregarProfissional();
+  const { prof, supabase } = await carregarProfissional();
+  const { data: servicos } = await supabase.from('servicos').select('id, nome, duracao_min').eq('ativo', true).order('nome');
   return (
     <form action={criarPacote} className="space-y-5">
       <Titulo voltar={`/clientes/${id}`}>Novo pacote</Titulo>
       <Aviso erro={erro} />
       <input type="hidden" name="cliente_id" value={id} />
+      {!!servicos?.length && (
+        <label className="block">
+          <span className={rotulo}>Serviço do pacote</span>
+          <select name="servico_id" defaultValue={servicos.length === 1 ? servicos[0].id : ''} className={campo}>
+            <option value="">Sem serviço específico</option>
+            {servicos.map((s) => <option key={s.id} value={s.id}>{s.nome} · {s.duracao_min} min</option>)}
+          </select>
+          <span className="mt-1 block text-[0.8rem] text-stone-500">Ao marcar sessões deste pacote, o serviço já vem escolhido.</span>
+        </label>
+      )}
       <fieldset className="group">
         <legend className={rotulo}>Sessões</legend>
         <div className="flex gap-2">

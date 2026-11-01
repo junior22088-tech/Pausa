@@ -22,6 +22,32 @@ insert into public.sessoes (cliente_id, pacote_id, inicio, situacao)
 insert into public.eventos (cliente_id, entidade, tipo, descricao)
   values ('aaaaaaaa-0000-0000-0000-000000000001', 'cliente', 'criou', 'teste');
 
+-- Agenda: serviço, semana padrão e trava de conflito ----------------------------
+insert into public.servicos (id, nome, duracao_min, preco_centavos)
+  values ('aaaaaaaa-0000-0000-0000-000000000003', 'Massagem relaxante', 60, 12000);
+insert into public.sessoes (cliente_id, servico_id, inicio, duracao_min, intervalo_min)
+  values ('aaaaaaaa-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000003', '2030-01-07 12:00:00+00', 60, 15);
+
+do $$ begin
+  assert (select count(*) from public.horarios_semana) = 7, 'ISOLAMENTO FALHOU: semana padrão não foi criada';
+  assert (select ocupado_ate from public.sessoes where inicio = '2030-01-07 12:00:00+00') = '2030-01-07 13:15:00+00',
+    'ISOLAMENTO FALHOU: ocupado_ate deveria ser início + 75 min';
+  -- 13:00 cai no intervalo da sessão das 12:00: tem de ser recusado.
+  begin
+    insert into public.sessoes (cliente_id, inicio, duracao_min, intervalo_min)
+      values ('aaaaaaaa-0000-0000-0000-000000000001', '2030-01-07 13:00:00+00', 60, 15);
+    raise exception 'ISOLAMENTO FALHOU: aceitou duas sessões no mesmo horário';
+  exception when exclusion_violation then null;
+  end;
+  -- 13:15 em diante pode.
+  insert into public.sessoes (cliente_id, inicio, duracao_min, intervalo_min)
+    values ('aaaaaaaa-0000-0000-0000-000000000001', '2030-01-07 13:15:00+00', 60, 15);
+  -- Uma sessão cancelada libera o horário.
+  update public.sessoes set situacao = 'cancelada' where inicio = '2030-01-07 13:15:00+00';
+  insert into public.sessoes (cliente_id, inicio, duracao_min, intervalo_min)
+    values ('aaaaaaaa-0000-0000-0000-000000000001', '2030-01-07 13:30:00+00', 30, 0);
+end $$;
+
 do $$ begin
   assert (select saldo from public.pacotes_saldo where id = 'aaaaaaaa-0000-0000-0000-000000000002') = 9,
     'ISOLAMENTO FALHOU: saldo da Ana deveria ser 9';
@@ -57,6 +83,8 @@ begin
   assert (select count(*) from public.sessoes) = 0, 'ISOLAMENTO FALHOU: B vê sessões da A';
   assert (select count(*) from public.eventos) = 0, 'ISOLAMENTO FALHOU: B vê eventos da A';
   assert (select count(*) from public.profissionais) = 1, 'ISOLAMENTO FALHOU: B vê outros perfis';
+  assert (select count(*) from public.servicos) = 0, 'ISOLAMENTO FALHOU: B vê serviços da A';
+  assert (select count(*) from public.horarios_semana) = 7, 'ISOLAMENTO FALHOU: B vê horários da A (ou não tem os seus)';
 
   update public.clientes set nome = 'invadido';
   get diagnostics n = row_count;
@@ -75,6 +103,18 @@ do $$ begin
     raise exception 'ISOLAMENTO FALHOU: B gravou cliente em nome da A';
   exception when insufficient_privilege then null; -- esperado (RLS)
   end;
+
+  insert into public.clientes (id, nome, telefone) values ('bbbbbbbb-0000-0000-0000-000000000001', 'Cliente da Bia', '5511999990003');
+  begin
+    insert into public.sessoes (cliente_id, servico_id, inicio)
+      values ('bbbbbbbb-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000003', now());
+    raise exception 'ISOLAMENTO FALHOU: B usou serviço da A';
+  exception when raise_exception then
+    if sqlerrm not like 'serviço de outro profissional%' then raise; end if;
+  end;
+  -- A trava de conflito é por profissional: B pode atender no mesmo horário que A.
+  insert into public.sessoes (cliente_id, inicio, duracao_min, intervalo_min)
+    values ('bbbbbbbb-0000-0000-0000-000000000001', '2030-01-07 12:00:00+00', 60, 15);
 
   begin
     insert into public.pacotes (cliente_id, total_sessoes, valor_centavos, validade_ate, regra_cancelamento)

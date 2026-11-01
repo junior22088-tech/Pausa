@@ -1,16 +1,17 @@
 import Link from 'next/link';
-import { CalendarPlus, Check, ChevronLeft, ChevronRight, MessageCircle, Plus } from 'lucide-react';
-import { Chip, Fab, Vazio, btnPrimario } from '@/components/ui';
+import { CalendarOff, CalendarPlus, ChevronLeft, ChevronRight, Plus, Settings2 } from 'lucide-react';
+import { Fab, Vazio, btnPrimario } from '@/components/ui';
+import { CalendarioDia, type DiaCalendario } from '@/components/CalendarioDia';
 
 export type DiaSemana = { iso: string; sigla: string; numero: string; hoje: boolean; qtd: number };
-export type SessaoAgenda = { id: string; hora: string; nome: string; situacao: 'marcada' | 'feita'; tipo: 'pacote' | 'avulsa'; lembreteAberto: boolean };
 
 export function TelaAgenda({
-  mes, semana, selecionado, tituloDia, sessoes, semanaAnterior, proximaSemana, hojeISO,
+  mes, semana, selecionado, tituloDia, calendario, semanaAnterior, proximaSemana, hojeISO, semServicos = false,
 }: {
-  mes: string; semana: DiaSemana[]; selecionado: string; tituloDia: string; sessoes: SessaoAgenda[];
-  semanaAnterior: string; proximaSemana: string; hojeISO: string;
+  mes: string; semana: DiaSemana[]; selecionado: string; tituloDia: string; calendario: DiaCalendario;
+  semanaAnterior: string; proximaSemana: string; hojeISO: string; semServicos?: boolean;
 }) {
+  const sessoes = calendario.sessoes;
   const ehHoje = selecionado === hojeISO;
   return (
     <div className="space-y-4 pb-16">
@@ -54,28 +55,22 @@ export function TelaAgenda({
         <span className="text-[0.85rem] text-stone-500">{sessoes.length ? `${sessoes.length} ${sessoes.length === 1 ? 'sessão' : 'sessões'}` : 'livre'}</span>
       </div>
 
-      {sessoes.length === 0 ? (
-        <Vazio icone={<CalendarPlus className="size-6" aria-hidden />} titulo="Dia livre"
+      {semServicos && (
+        <Link href="/ajustes/servicos" className="flex items-center gap-3 rounded-2xl bg-amber-50 p-3 text-[0.9rem] text-amber-950 ring-1 ring-amber-200">
+          <Settings2 className="size-5 shrink-0" aria-hidden />
+          <span>Cadastre seus serviços e horários de atendimento para a agenda mostrar os horários livres. <b className="underline">Configurar</b></span>
+        </Link>
+      )}
+
+      {calendario.folgaDia ? (
+        <Vazio icone={<CalendarOff className="size-6" aria-hidden />} titulo="Folga" texto={calendario.folgaDia}
+          acao={sessoes.length ? <Link href="/ajustes/folgas" className={btnPrimario}>Ver sessões para remarcar</Link> : undefined} />
+      ) : !calendario.expediente && sessoes.length === 0 ? (
+        <Vazio icone={<CalendarPlus className="size-6" aria-hidden />} titulo="Você não atende neste dia"
+          texto="Ainda dá para marcar fora do expediente."
           acao={<Link href={`/agenda/nova?dia=${selecionado}`} className={btnPrimario}><Plus className="size-5" aria-hidden />Marcar neste dia</Link>} />
       ) : (
-        <ul className="divide-y divide-stone-100 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-stone-200/80">
-          {sessoes.map((s) => (
-            <li key={s.id}>
-              <Link href={`/sessoes/${s.id}`} className={`flex min-h-16 items-center gap-4 px-4 py-3 hover:bg-stone-50 active:bg-stone-100 ${s.situacao === 'feita' ? 'opacity-70' : ''}`}>
-                <span className="w-12 shrink-0 text-base font-bold tabular-nums text-stone-900">{s.hora}</span>
-                <span aria-hidden className={`h-9 w-1 shrink-0 rounded-full ${s.situacao === 'feita' ? 'bg-stone-300' : 'bg-emerald-600'}`} />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-base font-semibold">{s.nome}</span>
-                  <span className="mt-0.5 flex flex-wrap items-center gap-1.5">
-                    {s.situacao === 'feita' ? <Chip tom="verde"><Check className="size-3.5" aria-hidden />Feita</Chip> : <Chip>{s.tipo === 'pacote' ? 'Pacote' : 'Avulsa'}</Chip>}
-                    {s.lembreteAberto && s.situacao !== 'feita' && <span className="inline-flex items-center gap-1 text-[0.8rem] text-stone-500"><MessageCircle className="size-3.5" aria-hidden />lembrete enviado</span>}
-                  </span>
-                </span>
-                <ChevronRight className="size-5 shrink-0 text-stone-400" aria-hidden />
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <CalendarioDia dia={selecionado} d={calendario} marcarHref={(h) => `/agenda/nova?dia=${selecionado}${h ? `&hora=${h}` : ''}`} />
       )}
 
       <Fab href={`/agenda/nova?dia=${selecionado}`} rotulo="Marcar" icone={<Plus className="size-5" aria-hidden />} />
