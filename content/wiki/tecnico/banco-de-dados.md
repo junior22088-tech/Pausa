@@ -30,7 +30,7 @@ Migrações em `supabase/migrations/`: `schema_inicial`, `licenca_estado`, `agen
 
 `pacotes.total_sessoes` = soma das quantidades. Sessões antigas sem item contam no primeiro item. `pacotes.servico_id` ficou só por compatibilidade.
 
-Criar e editar passam pela função `salvar_pacote(p_id, p_cliente_id, p_itens, p_valor_centavos, p_validade, p_regra)` (`security invoker`, tudo ou nada): relê nome/duração/preço do serviço cadastrado (não confia no navegador), bloqueia quantidade abaixo do usado e retirada de item com sessões, sobe a versão e volta para `aguardando_aceite`.
+Criar e editar ficam no app: `planejarItens` (`lib/pacote-regras.ts`, testado em `npm run test:pacote`) relê nome/duração/preço do serviço cadastrado (não confia no navegador), bloqueia quantidade abaixo do usado e retirada de item com sessões; `criarPacote`/`editarPacote` (`lib/actions.ts`) gravam, sobem a versão e voltam para `aguardando_aceite`. O banco garante as travas (RLS, `checar_dono_item`, `checar_item_da_sessao`, checks de quantidade e duração).
 
 ## Trava de conflito
 

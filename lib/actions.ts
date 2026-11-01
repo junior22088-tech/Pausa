@@ -8,7 +8,8 @@ import { createClient, requireUser } from '@/lib/supabase/server';
 import { exigirLicenca } from '@/lib/licenca';
 import { conflito, hhmm, horariosLivres, minutosSP, paraMin, proximosLivres } from '@/lib/agenda-horarios';
 import { configAgenda, sessoesDoDia } from '@/lib/agenda-dados';
-import { pacoteEmUso, resolverEscolha } from '@/lib/pacotes';
+import { itensDosPacotes, pacoteEmUso, resolverEscolha } from '@/lib/pacotes';
+import { pagoAposEdicao, planejarItens, type ItemEnviado, type ItemFinal } from '@/lib/pacote-regras';
 import { instanteSP, normalizarTelefone, paraCentavos, reais, somarDias, diaSP } from '@/lib/format';
 
 type Supa = Awaited<ReturnType<typeof createClient>>;
@@ -185,71 +186,115 @@ export async function corrigirCliente(fd: FormData) {
 }
 
 // ---------------------------------------------------------------- Pacotes
-/** Itens do formulário (JSON do components/ItensPacote). O banco revalida tudo em salvar_pacote. */
-function lerItens(fd: FormData, voltar: string) {
+/** Itens do formulário (JSON do components/ItensPacote). */
+function lerItens(fd: FormData, voltar: string): ItemEnviado[] {
   let itens: unknown;
   try { itens = JSON.parse(texto(fd, 'itens') || '[]'); } catch { itens = null; }
   if (!Array.isArray(itens)) falhou('Não foi possível ler os itens do pacote.', voltar);
-  if (!itens.length) falhou('Escolha pelo menos um serviço ou adicione um item.', voltar);
-  if (itens.some((i: { servico_id?: string; nome?: string }) => !i.servico_id && !String(i.nome ?? '').trim())) falhou('Dê um nome a cada item manual.', voltar);
-  return itens as { quantidade: number }[];
+  return itens as ItemEnviado[];
 }
 
-/** Mensagens do salvar_pacote são escritas para a pessoa; erros técnicos viram um aviso genérico. */
-function erroDoPacote(e: { message?: string; code?: string } | null) {
-  return e?.code === 'P0001' && e.message ? e.message : 'Não foi possível salvar o pacote.';
+async function servicosParaPacote(supabase: Supa, itens: ItemEnviado[]) {
+  const ids = itens.map((i) => i.servico_id).filter((x): x is string => !!x);
+  if (!ids.length) return [];
+  const { data } = await supabase.from('servicos').select('id, nome, duracao_min, preco_centavos').in('id', ids);
+  return data ?? [];
 }
+
+const linhaItem = (pacote_id: string, i: ItemFinal) => ({
+  pacote_id, servico_id: i.servico_id, nome: i.nome, duracao_min: i.duracao_min,
+  quantidade: i.quantidade, preco_unit_centavos: i.preco_unit_centavos, ordem: i.ordem,
+});
 
 export async function criarPacote(fd: FormData) {
   const { supabase } = await escritor();
   const cliente_id = texto(fd, 'cliente_id');
   const voltar = `/clientes/${cliente_id}/pacote`;
-  const itens = lerItens(fd, voltar);
-  const total = itens.reduce((a, i) => a + Number(i.quantidade || 0), 0);
+  const enviados = lerItens(fd, voltar);
+  const plano = planejarItens(enviados, await servicosParaPacote(supabase, enviados), null);
+  if (!plano.ok) falhou(plano.erro, voltar);
   const valor = paraCentavos(texto(fd, 'valor'));
+  const regra = texto(fd, 'regra');
   const diasDigitados = texto(fd, 'validade_outro').replace(/\D/g, '');
   if (texto(fd, 'validade_dias') === 'outro' && !diasDigitados) falhou('Digite quantos dias vale o pacote.', voltar);
   const diasValidade = Number(diasDigitados || texto(fd, 'validade_dias'));
-  if (total < 1 || total > 100) falhou('O pacote precisa ter de 1 a 100 sessões no total.', voltar);
   if (!Number.isFinite(valor) || valor < 0) falhou('Confira o valor do pacote.', voltar);
   if (!Number.isInteger(diasValidade) || diasValidade < 1 || diasValidade > 730) falhou('Validade entre 1 e 730 dias.', voltar);
+  if (!regra) falhou('Escreva a regra de cancelamento.', voltar);
 
-  const { data: id, error } = await supabase.rpc('salvar_pacote', {
-    p_id: null, p_cliente_id: cliente_id, p_itens: itens, p_valor_centavos: valor,
-    p_validade: somarDias(diaSP(), diasValidade), p_regra: texto(fd, 'regra'),
-  });
-  if (error || !id) falhou(erroDoPacote(error), voltar);
+  const { data, error } = await supabase.from('pacotes').insert({
+    cliente_id, total_sessoes: plano.total, valor_centavos: valor,
+    validade_ate: somarDias(diaSP(), diasValidade), regra_cancelamento: regra,
+  }).select('id').single();
+  if (error || !data) falhou('Não foi possível criar o pacote.', voltar);
+  const { error: eItens } = await supabase.from('pacote_itens').insert(plano.itens.map((i) => linhaItem(data.id, i)));
+  if (eItens) {
+    // Sem itens o pacote não serve: desfaz para não deixar pacote pela metade.
+    await supabase.from('pacotes').delete().eq('id', data.id);
+    falhou('Não foi possível salvar os serviços do pacote. Tente de novo.', voltar);
+  }
   await evento(supabase, {
-    cliente_id, entidade: 'pacote', entidade_id: id, tipo: 'criou',
-    descricao: `Pacote criado: ${total} sessões, ${reais(valor)}, ${diasValidade} dias`, depois: { itens },
+    cliente_id, entidade: 'pacote', entidade_id: data.id, tipo: 'criou',
+    descricao: `Pacote criado: ${plano.itens.map((i) => `${i.quantidade}× ${i.nome}`).join(', ')}; ${reais(valor)}, ${diasValidade} dias`,
+    depois: { itens: plano.itens },
   });
   revalidatePath(`/clientes/${cliente_id}`);
-  redirect(feito(`/pacotes/${id}/resumo`, `Pacote de ${total} sessões criado. Agora envie o resumo.`));
+  redirect(feito(`/pacotes/${data.id}/resumo`, `Pacote de ${plano.total} sessões criado. Agora envie o resumo.`));
 }
 
 export async function editarPacote(fd: FormData) {
   const { supabase } = await escritor();
   const id = texto(fd, 'id');
   const voltar = `/pacotes/${id}/editar`;
-  const itens = lerItens(fd, voltar);
+  const enviados = lerItens(fd, voltar);
   const valor = paraCentavos(texto(fd, 'valor'));
   const validade = texto(fd, 'validade');
+  const regra = texto(fd, 'regra');
   if (!Number.isFinite(valor) || valor < 0) falhou('Confira o valor do pacote.', voltar);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(validade)) falhou('Confira a data de validade.', voltar);
+  if (!regra) falhou('Escreva a regra de cancelamento.', voltar);
 
-  const { data: antes } = await supabase.from('pacotes').select('cliente_id, total_sessoes, valor_centavos, validade_ate, regra_cancelamento, versao, situacao').eq('id', id).single();
+  const { data: antes } = await supabase.from('pacotes')
+    .select('cliente_id, total_sessoes, valor_centavos, validade_ate, regra_cancelamento, versao, situacao, pago').eq('id', id).single();
   if (!antes) falhou('Pacote não encontrado.', '/clientes');
-  const { data: itensAntes } = await supabase.from('pacote_itens').select('nome, quantidade, duracao_min').eq('pacote_id', id).order('ordem');
+  if (!['aguardando_aceite', 'aceito'].includes(antes.situacao)) falhou('Pacote encerrado ou desistido não pode ser editado.', `/pacotes/${id}/resumo`);
 
-  const { error } = await supabase.rpc('salvar_pacote', {
-    p_id: id, p_cliente_id: antes.cliente_id, p_itens: itens, p_valor_centavos: valor, p_validade: validade, p_regra: texto(fd, 'regra'),
-  });
-  if (error) falhou(erroDoPacote(error), voltar);
-  const { data: depois } = await supabase.from('pacotes').select('total_sessoes, valor_centavos, validade_ate, regra_cancelamento, versao').eq('id', id).single();
+  // Itens de agora, com o usado e se há sessão marcada/feita ligada a cada um.
+  const atuais = await itensDosPacotes(supabase, [id]);
+  const { data: ligadas } = await supabase.from('sessoes').select('pacote_item_id, situacao').eq('pacote_id', id).neq('situacao', 'cancelada');
+  const plano = planejarItens(enviados, await servicosParaPacote(supabase, enviados), atuais.map((a, n) => ({
+    id: a.id, nome: a.nome, usadas: a.usadas,
+    // Sessões antigas sem item contam no primeiro item.
+    temSessaoAtiva: (ligadas ?? []).some((s) => s.pacote_item_id === a.id || (!s.pacote_item_id && n === 0)),
+  })));
+  if (!plano.ok) falhou(plano.erro, voltar);
+
+  // Sessões antigas sem item passam a apontar para o primeiro item (como a view já conta).
+  if (atuais[0]) await supabase.from('sessoes').update({ pacote_item_id: atuais[0].id }).eq('pacote_id', id).is('pacote_item_id', null);
+  for (const i of plano.itens) {
+    const { error } = i.id
+      ? await supabase.from('pacote_itens').update(linhaItem(id, i)).eq('id', i.id).eq('pacote_id', id)
+      : await supabase.from('pacote_itens').insert(linhaItem(id, i));
+    if (error) falhou('Não foi possível salvar os serviços do pacote. Tente de novo.', voltar);
+  }
+  if (plano.remover.length) {
+    await supabase.from('sessoes').update({ pacote_item_id: null }).in('pacote_item_id', plano.remover);
+    await supabase.from('pacote_itens').delete().in('id', plano.remover).eq('pacote_id', id);
+  }
+  const { data: pagos } = await supabase.from('pagamentos').select('valor_centavos').eq('pacote_id', id).is('anulado_em', null);
+  const recebido = (pagos ?? []).reduce((a, x) => a + x.valor_centavos, 0);
+  const versao = antes.versao + 1;
+  const { error } = await supabase.from('pacotes').update({
+    total_sessoes: plano.total, valor_centavos: valor, validade_ate: validade, regra_cancelamento: regra,
+    versao, situacao: 'aguardando_aceite', pago: pagoAposEdicao(antes.pago, antes.valor_centavos, valor, recebido),
+  }).eq('id', id);
+  if (error) falhou('Não foi possível salvar o pacote.', voltar);
+
   await evento(supabase, {
     cliente_id: antes.cliente_id, entidade: 'pacote', entidade_id: id, tipo: 'corrigiu',
-    descricao: `Pacote editado (versão ${depois?.versao ?? antes.versao + 1}): ${depois?.total_sessoes ?? '?'} sessões, ${reais(depois?.valor_centavos ?? valor)}${antes.situacao === 'aceito' ? '. Aguardando novo aceite' : ''}`,
-    antes: { ...antes, itens: itensAntes }, depois: { ...depois, itens },
+    descricao: `Pacote editado (versão ${versao}): ${plano.itens.map((i) => `${i.quantidade}× ${i.nome}`).join(', ')}; ${reais(valor)}${antes.situacao === 'aceito' ? '. Aguardando novo aceite' : ''}`,
+    antes: { ...antes, itens: atuais.map(({ nome, quantidade, duracao_min, usadas }) => ({ nome, quantidade, duracao_min, usadas })) },
+    depois: { total_sessoes: plano.total, valor_centavos: valor, validade_ate: validade, regra_cancelamento: regra, versao, itens: plano.itens },
   });
   revalidatePath('/', 'layout');
   redirect(feito(`/pacotes/${id}/resumo`, 'Pacote atualizado. Reenvie o resumo para a cliente aceitar a nova versão.'));
