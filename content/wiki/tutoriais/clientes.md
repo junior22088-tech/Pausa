@@ -19,5 +19,5 @@ Não anote informações de saúde no cadastro. Elas vão na [Anamnese](/wiki/tu
 :::
 
 :::dica
-O Pausa não importa a agenda de contatos do celular: você cadastra só quem é cliente, uma a uma.
+O maca & mensagem não importa a agenda de contatos do celular: você cadastra só quem é cliente, uma a uma.
 :::

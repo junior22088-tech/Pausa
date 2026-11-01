@@ -1,5 +1,21 @@
 @import "tailwindcss";
 
+/* Paleta maca & mensagem: a escala "emerald" usada no app vira a sálvia da marca.
+   500 = cor do logo; 700 = botões e links (6,2:1 no branco); 900 = oliva do logo. */
+@theme {
+  --color-emerald-50: #F3F6F1;
+  --color-emerald-100: #E6ECE2;
+  --color-emerald-200: #CCD8C6;
+  --color-emerald-300: #ADBEA6;
+  --color-emerald-400: #95A88E;
+  --color-emerald-500: #84967E;
+  --color-emerald-600: #6B7D66;
+  --color-emerald-700: #55654F;
+  --color-emerald-800: #46533F;
+  --color-emerald-900: #3D4433;
+  --color-emerald-950: #2B3024;
+}
+
 /* Letra base grande para profissionais pouco digitais (agente 03). */
 html { font-size: 18px; }
 body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }

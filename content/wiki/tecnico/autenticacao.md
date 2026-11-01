@@ -20,8 +20,8 @@ Principal: **e-mail e senha** (`signInWithPassword`; `signUp` em Criar conta; `u
 **Authentication → Email Templates → Magic Link**: incluir o código:
 
 ```html
-<h2>Seu acesso ao Pausa</h2>
-<p><a href="{{ .ConfirmationURL }}">Entrar no Pausa</a></p>
+<h2>Seu acesso ao maca & mensagem</h2>
+<p><a href="{{ .ConfirmationURL }}">Entrar no maca & mensagem</a></p>
 <p>Ou digite este código no app: <strong>{{ .Token }}</strong></p>
 ```
 

@@ -1,6 +1,6 @@
 # Marcar a primeira sessão
 
-Antes, configure [serviços e horários](/wiki/tutoriais/horarios-e-servicos): é com eles que o Pausa sabe quais horários cabem.
+Antes, configure [serviços e horários](/wiki/tutoriais/horarios-e-servicos): é com eles que o maca & mensagem sabe quais horários cabem.
 
 :::passo Veja o dia em calendário | agenda-dia.webp
 Na aba **Agenda**, escolha o dia na faixa da semana (o ponto verde marca dias com sessão). O dia aparece hora a hora:
@@ -24,7 +24,7 @@ Toque em **Ver horários fora do expediente**: aparecem os horários das 6h às 
 :::
 
 :::dica
-O Pausa nunca deixa duas sessões no mesmo horário, contando o intervalo, nem marcando em dois celulares ao mesmo tempo. Se alguém ocupar o horário enquanto você escolhia, ele avisa quem está lá e sugere os próximos livres.
+O maca & mensagem nunca deixa duas sessões no mesmo horário, contando o intervalo, nem marcando em dois celulares ao mesmo tempo. Se alguém ocupar o horário enquanto você escolhia, ele avisa quem está lá e sugere os próximos livres.
 :::
 
 ## Remarcar e cancelar

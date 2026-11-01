@@ -8,7 +8,7 @@
     "itens": [
       {
         "slug": "tutoriais/primeiros-passos",
-        "titulo": "Conheça o Pausa",
+        "titulo": "Conheça o maca & mensagem",
         "descricao": "As três abas e o que cada uma faz."
       },
       {
@@ -95,19 +95,19 @@
       {
         "slug": "tutoriais/seus-dados",
         "titulo": "Seus dados",
-        "descricao": "O que o Pausa guarda e como pedir exclusão."
+        "descricao": "O que o maca & mensagem guarda e como pedir exclusão."
       }
     ]
   },
   {
     "id": "instalacao",
     "titulo": "Instalação e licença",
-    "descricao": "Para quem comprou: instalar e ativar o Pausa.",
+    "descricao": "Para quem comprou: instalar e ativar o maca & mensagem.",
     "icone": "key",
     "itens": [
       {
         "slug": "instalacao/passo-a-passo",
-        "titulo": "Instalar o Pausa",
+        "titulo": "Instalar o maca & mensagem",
         "descricao": "Do zero até o app no ar."
       },
       {

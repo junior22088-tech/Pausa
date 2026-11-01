@@ -16,7 +16,7 @@ export function TelaFolgas({ futuros, afetadasPor, prof, hoje, mostrarForm, nova
   return (
     <div className="space-y-5 pb-8">
       <Titulo voltar="/ajustes" voltarRotulo="Ajustes">Folgas e bloqueios</Titulo>
-      <p className="-mt-2 text-[0.9rem] text-stone-600">Dias ou horários em que você não atende. Eles somem dos horários livres. Sessões já marcadas não são canceladas: o Pausa mostra quais são para você avisar e remarcar.</p>
+      <p className="-mt-2 text-[0.9rem] text-stone-600">Dias ou horários em que você não atende. Eles somem dos horários livres. Sessões já marcadas não são canceladas: o maca & mensagem mostra quais são para você avisar e remarcar.</p>
       <Aviso erro={erro} />
 
       {futuros.length === 0 && !nova && <Vazio icone={<CalendarOff className="size-6" aria-hidden />} titulo="Nenhuma folga marcada" />}

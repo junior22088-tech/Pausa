@@ -1,6 +1,6 @@
 # Visão geral e escopo
 
-**Pausa** é um app web mobile-first para massoterapeutas e terapeutas integrativos autônomos. Ele cuida de agenda, pacotes com saldo, aceite do combinado e anotação de pagamentos. O cliente final só recebe mensagens no WhatsApp por link `wa.me`, enviadas pelo profissional com um toque.
+**maca & mensagem** é um app web mobile-first para massoterapeutas e terapeutas integrativos autônomos. Ele cuida de agenda, pacotes com saldo, aceite do combinado e anotação de pagamentos. O cliente final só recebe mensagens no WhatsApp por link `wa.me`, enviadas pelo profissional com um toque.
 
 ## Princípios
 

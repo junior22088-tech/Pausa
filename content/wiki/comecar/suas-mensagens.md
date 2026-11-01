@@ -1,6 +1,6 @@
 # Ajustar suas mensagens
 
-Todas as mensagens que o Pausa prepara para o WhatsApp (resumo do pacote, lembrete, saldo) começam com o seu nome. Configure isso uma vez.
+Todas as mensagens que o maca & mensagem prepara para o WhatsApp (resumo do pacote, lembrete, saldo) começam com o seu nome. Configure isso uma vez.
 
 :::passo Abra os Ajustes | hoje-topo.webp
 Toque na **engrenagem**, no canto de cima de qualquer tela.

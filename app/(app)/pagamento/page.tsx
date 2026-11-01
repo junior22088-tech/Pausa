@@ -37,7 +37,7 @@ export default async function Pagamento({ searchParams }: { searchParams: Promis
           ))}
         </div>
       </form>
-      <p className="text-base text-stone-500">O dinheiro vai direto para você. O Pausa só anota. Se errar, anule na ficha do cliente.</p>
+      <p className="text-base text-stone-500">O dinheiro vai direto para você. O maca & mensagem só anota. Se errar, anule na ficha do cliente.</p>
     </div>
   );
 }

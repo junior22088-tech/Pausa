@@ -77,7 +77,7 @@ export function decidir(args: {
     const ativa = status === 'ativa' || status === 'dispensada';
     const dias = diasAte(expiraEm, agora);
     let aviso: string | null = null;
-    if (!ativa) aviso = `${MOTIVOS[status]} O Pausa está só para consulta.`;
+    if (!ativa) aviso = `${MOTIVOS[status]} O maca & mensagem está só para consulta.`;
     else if (status === 'ativa' && dias !== null && dias <= AVISO_DIAS) aviso = `Sua licença vence em ${dias} ${dias === 1 ? 'dia' : 'dias'}.`;
     return { ...base, status, podeGravar: ativa, expiraEm, diasRestantes: dias, offline, verificadoEm, aviso };
   };

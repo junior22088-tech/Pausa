@@ -1,6 +1,6 @@
 # Criar um pacote e pedir o aceite
 
-O aceite é o centro do Pausa: um registro claro do que foi combinado, para não haver "mas eu achei que eram 10 sessões".
+O aceite é o centro do maca & mensagem: um registro claro do que foi combinado, para não haver "mas eu achei que eram 10 sessões".
 
 :::passo Escolha os serviços | pacote-servicos.webp
 Na ficha da cliente, toque em **Novo pacote**. Em **Serviços da sua lista**, use **+** e **−** (ou digite) a quantidade de cada um. Ex.: 6 Massagem relaxante + 4 Drenagem. Deixe em 0 o que não entra.
@@ -21,7 +21,7 @@ A tela mostra exatamente a mensagem que a cliente vai receber. Toque em **Enviar
 :::passo Marque o aceite | pacote-aceite.webp
 Quando ela responder, volte ao resumo (na aba **Hoje** ele aparece em "Precisa de atenção"). Cole o que ela escreveu (opcional) e toque em **Aceitou**. Se ela não quiser, toque em **Desistiu…**.
 
-O Pausa guarda o texto exato enviado, a resposta, a data e uma "impressão digital" do texto, que prova que ele não mudou depois.
+O maca & mensagem guarda o texto exato enviado, a resposta, a data e uma "impressão digital" do texto, que prova que ele não mudou depois.
 :::
 
 :::passo Acompanhe o saldo de cada serviço | ficha-pacote.webp
@@ -38,7 +38,7 @@ Na ficha, toque em **Editar**, ao lado de "Pacote" (ou em **Editar** no resumo).
 :::
 
 :::atencao
-Ao salvar, o pacote vira uma **nova versão** e volta para **aguardando aceite**. Reenvie o resumo (ele diz "resumo *atualizado*") e marque o aceite de novo. O Pausa não deixa marcar o aceite com um resumo antigo. O aceite anterior continua guardado.
+Ao salvar, o pacote vira uma **nova versão** e volta para **aguardando aceite**. Reenvie o resumo (ele diz "resumo *atualizado*") e marque o aceite de novo. O maca & mensagem não deixa marcar o aceite com um resumo antigo. O aceite anterior continua guardado.
 :::
 
-> O aceite é marcado por você, com base na resposta no WhatsApp. O Pausa não lê suas conversas. É um registro do combinado, não um contrato assinado.
+> O aceite é marcado por você, com base na resposta no WhatsApp. O maca & mensagem não lê suas conversas. É um registro do combinado, não um contrato assinado.

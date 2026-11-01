@@ -5,7 +5,7 @@
 | Titular | Dados | Base legal (a validar com jurídico) |
 |---|---|---|
 | Profissional | e-mail, nome, telefone, endereço | execução de contrato |
-| Cliente final | nome, WhatsApp, agenda, pacotes, pagamentos | o profissional é o **controlador**; o Pausa é **operador** |
+| Cliente final | nome, WhatsApp, agenda, pacotes, pagamentos | o profissional é o **controlador**; o maca & mensagem é **operador** |
 
 | Cliente final | **anamnese (saúde, dado sensível)** | consentimento específico e destacado (LGPD art. 11, I), registrado com texto + hash |
 

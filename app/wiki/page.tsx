@@ -112,7 +112,7 @@ export default async function CentralDeAjuda({ searchParams }: { searchParams: P
             <p className="text-base font-bold">Não achou o que procurava?</p>
             <p className="text-[0.85rem] text-stone-600">{suporte ? 'Fale com a gente pelo WhatsApp.' : 'Veja as perguntas frequentes.'}</p>
           </div>
-          <a href={suporte ? linkWhatsApp(suporte, 'Olá! Preciso de ajuda com o Pausa.') : '/wiki/tutoriais/perguntas-frequentes'}
+          <a href={suporte ? linkWhatsApp(suporte, 'Olá! Preciso de ajuda com o maca & mensagem.') : '/wiki/tutoriais/perguntas-frequentes'}
             className="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-full bg-white px-4 text-[0.9rem] font-semibold text-emerald-800 shadow-sm">
             {suporte ? 'Chamar' : 'Ver'}<ArrowRight className="size-4" aria-hidden />
           </a>

@@ -1,12 +1,12 @@
 # Seus dados e privacidade
 
-## O que o Pausa guarda
+## O que o maca & mensagem guarda
 
 - Seu e-mail e o que você preencheu em Ajustes.
 - Das clientes: **nome e WhatsApp**, sessões, pacotes, pagamentos e o histórico.
 - **Anamnese** (só se você usar e a cliente autorizar): guardada criptografada. Veja [Anamnese](/wiki/tutoriais/anamnese).
 
-O Pausa **não guarda** conversas do WhatsApp nem dados de cartão.
+O maca & mensagem **não guarda** conversas do WhatsApp nem dados de cartão.
 
 ## Quem vê
 

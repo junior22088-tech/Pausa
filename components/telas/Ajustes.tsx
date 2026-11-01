@@ -36,7 +36,7 @@ export function TelaAjustes({ p, email, suporte, erro }: { p: { nome_mensagem?: 
         <h2 className="mb-2 text-lg font-bold">Seus dados</h2>
         <p className="mb-3 text-base text-stone-600">Para exportar ou apagar os dados de um cliente, ou a sua conta, fale com o suporte. No piloto isso é feito por uma pessoa.</p>
         {suporte
-          ? <a href={linkWhatsApp(suporte, 'Olá! Quero pedir exportação ou exclusão de dados no Pausa.')} className={`${btnSecundario} w-full`}>Pedir exportação ou exclusão</a>
+          ? <a href={linkWhatsApp(suporte, 'Olá! Quero pedir exportação ou exclusão de dados no maca & mensagem.')} className={`${btnSecundario} w-full`}>Pedir exportação ou exclusão</a>
           : <p className="text-base text-stone-500">Suporte ainda não configurado.</p>}
       </Cartao>
 

@@ -11,7 +11,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string[] }> }) {
   const { slug } = await params;
-  return { title: `${pagina(slug.join('/'))?.titulo ?? 'Ajuda'} · Central de ajuda · Pausa` };
+  return { title: `${pagina(slug.join('/'))?.titulo ?? 'Ajuda'} · Central de ajuda · maca & mensagem` };
 }
 
 export default async function Artigo({ params }: { params: Promise<{ slug: string[] }> }) {
@@ -60,7 +60,7 @@ export default async function Artigo({ params }: { params: Promise<{ slug: strin
           </Link>
         ) : s.trilha ? (
           <Link href="/" className="flex min-h-16 items-center justify-end gap-3 rounded-2xl bg-emerald-700 p-4 text-right text-white shadow-sm hover:bg-emerald-800">
-            <span><span className="block text-[0.75rem] font-semibold text-emerald-100">Trilha concluída</span><span className="block font-semibold">Abrir o Pausa</span></span>
+            <span><span className="block text-[0.75rem] font-semibold text-emerald-100">Trilha concluída</span><span className="block font-semibold">Abrir o maca & mensagem</span></span>
             <Check className="size-5 shrink-0" aria-hidden />
           </Link>
         ) : null}

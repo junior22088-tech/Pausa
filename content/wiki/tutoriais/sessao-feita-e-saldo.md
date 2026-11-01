@@ -5,7 +5,7 @@ Ao terminar o atendimento, abra a sessão e toque em **Marcar como feita**. Se �
 :::
 
 :::passo Envie o saldo | sessao-saldo.webp
-O Pausa abre o saldo com a conta pronta. Toque em **Enviar saldo** para mandar à cliente pelo WhatsApp:
+O maca & mensagem abre o saldo com a conta pronta. Toque em **Enviar saldo** para mandar à cliente pelo WhatsApp:
 
 ```
 Marta Souza – massoterapia

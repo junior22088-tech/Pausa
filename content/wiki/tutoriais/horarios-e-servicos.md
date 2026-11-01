@@ -41,5 +41,5 @@ Toque em **Registrar folga**. Durante a folga, a agenda não oferece horários.
 :::
 
 :::passo Já tinha sessão marcada? Avise | folgas.webp
-O Pausa **não cancela nada sozinho**. Ele lista as sessões que caem na folga, com o botão **Avisar**: abre o WhatsApp com uma mensagem pronta pedindo para remarcar. Depois, remarque a sessão.
+O maca & mensagem **não cancela nada sozinho**. Ele lista as sessões que caem na folga, com o botão **Avisar**: abre o WhatsApp com uma mensagem pronta pedindo para remarcar. Depois, remarque a sessão.
 :::

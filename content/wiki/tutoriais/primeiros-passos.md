@@ -1,6 +1,6 @@
-# Conheça o Pausa
+# Conheça o maca & mensagem
 
-O Pausa é o seu caderno de atendimentos no celular: quem são suas clientes, quando é cada sessão, quanto resta de cada pacote e o que já foi pago. **Sua cliente não instala nada**: ela só recebe mensagens no WhatsApp, que você envia com um toque.
+O maca & mensagem é o seu caderno de atendimentos no celular: quem são suas clientes, quando é cada sessão, quanto resta de cada pacote e o que já foi pago. **Sua cliente não instala nada**: ela só recebe mensagens no WhatsApp, que você envia com um toque.
 
 :::passo As três abas, embaixo | hoje-abas.webp
 Tudo o que você faz no dia a dia está em três abas:

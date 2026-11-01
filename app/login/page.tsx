@@ -14,7 +14,10 @@ export default async function Login({ searchParams }: { searchParams: Promise<Bu
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-5">
-      <h1 className="mb-2 text-3xl font-bold text-emerald-800">Pausa</h1>
+      <h1 className="mb-3">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/marca/logo-horizontal.svg" alt="maca & mensagem – sua agenda descomplicada" width={300} height={90} className="h-auto w-full max-w-[18rem]" />
+      </h1>
       <p className="mb-6 text-lg text-stone-600">Agenda, pacotes e pagamentos no seu celular.</p>
       <Aviso erro={erro} ok={ok} />
 

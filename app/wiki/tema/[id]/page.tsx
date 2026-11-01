@@ -12,7 +12,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return { title: `${secao(id)?.titulo ?? 'Ajuda'} · Central de ajuda · Pausa` };
+  return { title: `${secao(id)?.titulo ?? 'Ajuda'} · Central de ajuda · maca & mensagem` };
 }
 
 export default async function Tema({ params }: { params: Promise<{ id: string }> }) {

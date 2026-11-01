@@ -1,6 +1,6 @@
 # Corrigir um erro
 
-No Pausa nada é apagado: toda correção vira uma nova linha no histórico. Assim você sempre consegue explicar o que aconteceu.
+No maca & mensagem nada é apagado: toda correção vira uma nova linha no histórico. Assim você sempre consegue explicar o que aconteceu.
 
 | Errei em… | Como corrigir |
 |---|---|

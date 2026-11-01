@@ -15,7 +15,7 @@ export function TelaServicos({ ativos, emEdicao, mostrarForm, novo, intervalo, e
     <div className="space-y-5 pb-8">
       <Titulo voltar="/ajustes" voltarRotulo="Ajustes">Serviços</Titulo>
       <p className="-mt-2 text-[0.9rem] text-stone-600">
-        A duração define quais horários aparecem livres ao marcar. Depois de cada sessão o Pausa reserva mais {intervalo} min de intervalo (<Link href="/ajustes/horarios" className="font-semibold text-emerald-800 underline">mudar</Link>).
+        A duração define quais horários aparecem livres ao marcar. Depois de cada sessão o maca & mensagem reserva mais {intervalo} min de intervalo (<Link href="/ajustes/horarios" className="font-semibold text-emerald-800 underline">mudar</Link>).
       </p>
       <Aviso erro={erro} />
 

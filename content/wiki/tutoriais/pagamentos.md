@@ -1,6 +1,6 @@
 # Registrar pagamentos
 
-O Pausa **não cobra** nem recebe dinheiro. Você continua recebendo como sempre (Pix, cartão, dinheiro) e só anota que recebeu.
+O maca & mensagem **não cobra** nem recebe dinheiro. Você continua recebendo como sempre (Pix, cartão, dinheiro) e só anota que recebeu.
 
 ## Registrar
 

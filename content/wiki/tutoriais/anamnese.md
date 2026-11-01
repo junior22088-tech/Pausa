@@ -2,7 +2,7 @@
 
 A anamnese é a ficha de saúde da cliente: gestação, pressão, circulação, alergias, lesões e remédios. Serve para você avaliar se a massagem é segura e adaptar o atendimento. Você preenche durante a sessão, com a cliente presente.
 
-Dado de saúde é **dado sensível** pela LGPD. Por isso o Pausa só deixa anotar com a **autorização específica** da cliente, guarda tudo **criptografado** e pede sua senha para abrir.
+Dado de saúde é **dado sensível** pela LGPD. Por isso o maca & mensagem só deixa anotar com a **autorização específica** da cliente, guarda tudo **criptografado** e pede sua senha para abrir.
 
 :::passo Abra a anamnese na ficha da cliente | cliente-anamnese.webp
 Na ficha da cliente, toque em **Anamnese**. A linha mostra só o estado ("Protegida · atualizada em…"), nunca o conteúdo.
@@ -11,7 +11,7 @@ Na ficha da cliente, toque em **Anamnese**. A linha mostra só o estado ("Proteg
 :::passo Peça a autorização pelo WhatsApp | anamnese-pedido.webp
 Toque em **Pedir autorização no WhatsApp**. A mensagem explica para que serve, quem vê (só você), que fica protegida e que ela pode pedir para apagar quando quiser. Ela responde **AUTORIZO**.
 
-Depois, toque em **Ela autorizou** (cole a resposta, se quiser). O Pausa guarda o texto exato enviado, a data e a "impressão digital" do texto, como no aceite do pacote.
+Depois, toque em **Ela autorizou** (cole a resposta, se quiser). O maca & mensagem guarda o texto exato enviado, a data e a "impressão digital" do texto, como no aceite do pacote.
 :::
 
 :::passo Digite sua senha para abrir | anamnese-bloqueada.webp
@@ -53,4 +53,4 @@ Se ela pedir uma cópia, abra a ficha e mostre ou envie as respostas.
 Primeira vez? Antes, a anamnese precisa ser ativada em **Ajustes → Anamnese** (uma chave de proteção, uma vez só).
 :::
 
-> O Pausa não substitui orientação jurídica. Vale um profissional de LGPD revisar o texto da autorização e por quanto tempo guardar as fichas.
+> O maca & mensagem não substitui orientação jurídica. Vale um profissional de LGPD revisar o texto da autorização e por quanto tempo guardar as fichas.

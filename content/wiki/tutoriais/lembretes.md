@@ -12,7 +12,7 @@ Rua das Flores, 120
 Para remarcar, me avise por aqui com antecedência.
 ```
 
-Envie. O Pausa anota que o lembrete foi aberto, para você saber quem já foi lembrada.
+Envie. O maca & mensagem anota que o lembrete foi aberto, para você saber quem já foi lembrada.
 
 ## Por que não é automático?
 

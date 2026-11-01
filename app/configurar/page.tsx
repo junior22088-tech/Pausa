@@ -1,12 +1,12 @@
 import { CONFIGURADO } from '@/lib/supabase/config';
 
-export const metadata = { title: 'Configurar · Pausa' };
+export const metadata = { title: 'Configurar · maca & mensagem' };
 
 // Mostrada quando a instalação ainda não tem Supabase configurado.
 export default function Configurar() {
   return (
     <main className="mx-auto max-w-xl px-5 py-10 text-lg">
-      <h1 className="mb-3 text-3xl font-bold text-emerald-800">Falta configurar o Pausa</h1>
+      <h1 className="mb-3 text-3xl font-bold text-emerald-800">Falta configurar o maca & mensagem</h1>
       {CONFIGURADO ? (
         <p>Tudo certo: o Supabase está configurado. <a className="underline" href="/login">Ir para o login</a>.</p>
       ) : (
