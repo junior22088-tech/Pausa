@@ -6,7 +6,11 @@ import { Cabecalho } from '@/components/Cabecalho';
 import { TelaHoje } from '@/components/telas/Hoje';
 import { TelaClientes } from '@/components/telas/Clientes';
 import { TelaFichaCliente } from '@/components/telas/FichaCliente';
-import { anularPagamento, registrarWhatsApp, sessaoFeita } from '@/lib/actions';
+import { Suspense } from 'react';
+import { anularPagamento, cancelarSessao, desfazerFeita, registrarWhatsApp, remarcarSessao, sessaoFeita } from '@/lib/actions';
+import { TelaAgenda } from '@/components/telas/Agenda';
+import { TelaSessao } from '@/components/telas/Sessao';
+import { Toast } from '@/components/Toast';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,12 +31,35 @@ export default async function Galeria({ searchParams }: { searchParams: Promise<
           { id: 'p2', tipo: 'pacote', nome: 'Carla Souza', valor: 'R$ 900,00', href: '#' },
         ]}
         sessoes={semDados ? [] : [
-          { id: 's1', hora: '09:00', nome: 'Ana Paula Ribeiro', situacao: 'feita', tipo: 'pacote', lembreteAberto: true, whatsappHref: WA },
-          { id: 's2', hora: '11:30', nome: 'Carla Souza', situacao: 'marcada', tipo: 'pacote', lembreteAberto: true, whatsappHref: WA },
-          { id: 's3', hora: '15:00', nome: 'Dona Marlene Alves', situacao: 'marcada', tipo: 'avulsa', lembreteAberto: false, whatsappHref: WA },
+          { id: 's1', hora: '09:00', nome: 'Ana Paula Ribeiro', situacao: 'feita', tipo: 'pacote', lembreteAberto: true },
+          { id: 's2', hora: '11:30', nome: 'Carla Souza', situacao: 'marcada', tipo: 'pacote', lembreteAberto: true },
+          { id: 's3', hora: '15:00', nome: 'Dona Marlene Alves', situacao: 'marcada', tipo: 'avulsa', lembreteAberto: false },
         ]}
-        sessaoFeita={sessaoFeita}
-        registrarLembrete={(id) => registrarWhatsApp.bind(null, id, 'lembrete')}
+      />
+    );
+  } else if (tela === 'agenda') {
+    const dias = [['seg','2',2],['ter','3',3],['qua','4',0],['qui','5',1],['sex','6',4],['sáb','7',0],['dom','8',0]] as const;
+    conteudo = (
+      <TelaAgenda
+        mes="novembro de 2026" hojeISO="2026-11-02" selecionado="2026-11-03" tituloDia="terça-feira, 3 de novembro"
+        semanaAnterior="2026-10-27" proximaSemana="2026-11-10"
+        semana={dias.map(([sigla, numero, qtd], i) => ({ iso: `2026-11-0${i + 2}`, sigla, numero, hoje: numero === '2', qtd }))}
+        sessoes={semDados ? [] : [
+          { id: 'a1', hora: '09:00', nome: 'Ana Paula Ribeiro', situacao: 'feita', tipo: 'pacote', lembreteAberto: true },
+          { id: 'a2', hora: '11:30', nome: 'Carla Souza', situacao: 'marcada', tipo: 'pacote', lembreteAberto: true },
+          { id: 'a3', hora: '15:00', nome: 'Dona Marlene Alves', situacao: 'marcada', tipo: 'avulsa', lembreteAberto: false },
+        ]}
+      />
+    );
+  } else if (tela === 'sessao' || tela === 'sessao-feita') {
+    const feita = tela === 'sessao-feita';
+    conteudo = (
+      <TelaSessao
+        s={{ id: 's2', cliente: { id: 'c3', nome: 'Carla Souza' }, hora: '11:30', diaExtenso: 'terça-feira, 3 de novembro', diaISO: '2026-11-03',
+          situacao: feita ? 'feita' : 'marcada', descontada: false, temPacote: !feita, saldoPacote: 1, valorAvulso: feita ? 'R$ 120,00' : null, pago: false,
+          lembreteAberto: true, whatsappHref: WA }}
+        sessaoFeita={sessaoFeita} desfazerFeita={desfazerFeita} remarcarSessao={remarcarSessao} cancelarSessao={cancelarSessao}
+        registrarLembrete={registrarWhatsApp.bind(null, 's2', 'lembrete')}
       />
     );
   } else if (tela === 'clientes') {
@@ -78,6 +105,7 @@ export default async function Galeria({ searchParams }: { searchParams: Promise<
       <Cabecalho />
       <main>{conteudo}</main>
       <BottomNav />
+      <Suspense><Toast /></Suspense>
     </div>
   );
 }

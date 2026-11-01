@@ -1,6 +1,5 @@
 import { carregarProfissional } from '@/lib/dados';
-import { dataPorExtenso, diaSP, hora, inicioDoDia, linkWhatsApp, msgLembrete, reais, somarDias } from '@/lib/format';
-import { registrarWhatsApp, sessaoFeita } from '@/lib/actions';
+import { dataPorExtenso, diaSP, hora, inicioDoDia, reais, somarDias } from '@/lib/format';
 import { TelaHoje, type PendenciaHoje, type SessaoHoje } from '@/components/telas/Hoje';
 
 export default async function Hoje({ searchParams }: { searchParams: Promise<{ erro?: string }> }) {
@@ -33,7 +32,6 @@ export default async function Hoje({ searchParams }: { searchParams: Promise<{ e
     situacao: s.situacao,
     tipo: s.pacote_id ? 'pacote' : 'avulsa',
     lembreteAberto: !!s.lembrete_aberto_em,
-    whatsappHref: linkWhatsApp(s.clientes?.telefone ?? '', msgLembrete(prof, s.clientes?.nome ?? '', s.inicio, 'com antecedência')),
   }));
 
   return (
@@ -44,8 +42,6 @@ export default async function Hoje({ searchParams }: { searchParams: Promise<{ e
       erro={erro}
       pendencias={pendencias}
       sessoes={lista}
-      sessaoFeita={sessaoFeita}
-      registrarLembrete={(id) => registrarWhatsApp.bind(null, id, 'lembrete')}
     />
   );
 }

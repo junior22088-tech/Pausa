@@ -2,7 +2,7 @@
 
 ## Cadastrar
 
-1. Aba **Clientes** → **Novo cliente**.
+1. Aba **Clientes** → botão **+ Cliente** (no canto inferior).
 2. Preencha **nome** e **WhatsApp com DDD** (ex.: 11 98765-4321).
 3. Toque em **Salvar**.
 
@@ -16,16 +16,17 @@ Na aba **Clientes**, digite parte do nome na busca.
 
 ## Corrigir nome ou telefone
 
-1. Abra a cliente e toque em **corrigir**, ao lado do telefone.
+1. Abra a cliente e toque em **Editar**, no topo.
 2. Altere e toque em **Salvar correção**.
 
 A correção fica registrada no **histórico** da cliente (o que era antes e o que ficou), sem apagar nada.
 
 ## O que tem na página da cliente
 
-- **Pacote atual**, com saldo e validade.
-- **Próximas sessões**.
-- **Pagamentos**.
-- **Histórico**: tudo o que aconteceu, em ordem.
+- No topo: nome, telefone e atalhos para **WhatsApp**, **Marcar** e **Novo pacote**.
+- **Pacote**: sessões restantes, barra de progresso, validade e se está aceito e pago.
+- Abas **Sessões** (próximas), **Pagamentos** e **Histórico** (tudo o que aconteceu, em ordem).
+
+Na lista de clientes, a etiqueta ao lado do nome mostra quantas sessões restam no pacote (ex.: 7/10).
 
 O Pausa **não tem ficha de saúde nem campo de anotações livres** nesta versão. Assim, nenhum dado sensível de saúde fica guardado.

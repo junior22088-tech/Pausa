@@ -4,14 +4,14 @@ O Pausa **não cobra** nem recebe dinheiro. Você continua recebendo como sempre
 
 ## Registrar
 
-- **Pacote**: na aba **Hoje**, toque na linha **Não pago: … pacote** (ou em **Recebi**, na cliente).
+- **Pacote**: na aba **Hoje**, em **Precisa de atenção**, toque na linha do pacote não pago (ou em **Recebi**, no cartão do pacote na ficha do cliente).
 - **Sessão avulsa**: na sessão, toque em **Recebi**; ou na linha **Não pago: … sessão avulsa** da aba Hoje.
 
 Confira o valor e toque na forma: **Pix**, **Cartão** ou **Dinheiro**. Pronto, o item fica como pago.
 
 ## O que está pendente
 
-A aba **Hoje** lista, no topo, os pacotes e sessões avulsas ainda não pagos.
+A aba **Hoje** lista, em **Precisa de atenção**, os pacotes e sessões avulsas ainda não pagos.
 
 ## Anotei errado
 

@@ -38,6 +38,12 @@ function texto(fd: FormData, campo: string) {
   return String(fd.get(campo) ?? '').trim();
 }
 
+/** Volta para `url` com um aviso de confirmação (o "toast" de components/Toast.tsx). */
+function feito(url: string, msg: string) {
+  return `${url}${url.includes('?') ? '&' : '?'}feito=${encodeURIComponent(msg)}`;
+}
+const ddmm = (dia: string) => dia.split('-').reverse().slice(0, 2).join('/');
+
 function falhou(msg: string, voltar: string): never {
   redirect(`${voltar}${voltar.includes('?') ? '&' : '?'}erro=${encodeURIComponent(msg)}`);
 }
@@ -121,7 +127,7 @@ export async function definirSenha(fd: FormData) {
   const { supabase } = await requireUser();
   const { error } = await supabase.auth.updateUser({ password: senha });
   if (error) falhou('Não foi possível salvar a senha. Tente outra.', '/ajustes');
-  redirect('/ajustes?senha=1');
+  redirect(feito('/ajustes', 'Senha salva. Da próxima vez, entre com e-mail e senha.'));
 }
 
 export async function sair() {
@@ -144,7 +150,7 @@ export async function salvarAjustes(fd: FormData) {
   const { error } = await supabase.from('profissionais').update(dados).eq('id', user.id);
   if (error) falhou('Não foi possível salvar. Tente de novo.', '/ajustes');
   revalidatePath('/', 'layout');
-  redirect('/ajustes?salvo=1');
+  redirect(feito('/ajustes', 'Ajustes salvos.'));
 }
 
 // ---------------------------------------------------------------- Clientes
@@ -158,7 +164,7 @@ export async function criarCliente(fd: FormData) {
   if (error || !data) falhou('Não foi possível cadastrar. Tente de novo.', '/clientes/novo');
   await evento(supabase, { cliente_id: data.id, entidade: 'cliente', entidade_id: data.id, tipo: 'criou', descricao: `Cliente cadastrado: ${nome}` });
   revalidatePath('/clientes');
-  redirect(`/clientes/${data.id}?ok=novo`);
+  redirect(feito(`/clientes/${data.id}?ok=novo`, `${nome} cadastrado.`));
 }
 
 export async function corrigirCliente(fd: FormData) {
@@ -172,7 +178,7 @@ export async function corrigirCliente(fd: FormData) {
   if (error) falhou('Não foi possível salvar.', `/clientes/${id}/editar`);
   await evento(supabase, { cliente_id: id, entidade: 'cliente', entidade_id: id, tipo: 'corrigiu', descricao: 'Dados do cliente corrigidos', antes, depois: { nome, telefone } });
   revalidatePath(`/clientes/${id}`);
-  redirect(`/clientes/${id}`);
+  redirect(feito(`/clientes/${id}`, 'Dados corrigidos. A mudança ficou no histórico.'));
 }
 
 // ---------------------------------------------------------------- Pacotes
@@ -206,7 +212,7 @@ export async function criarPacote(fd: FormData) {
     descricao: `Pacote criado: ${total} sessões, ${reais(valor)}, ${diasValidade} dias`,
   });
   revalidatePath(`/clientes/${cliente_id}`);
-  redirect(`/pacotes/${data.id}/resumo`);
+  redirect(feito(`/pacotes/${data.id}/resumo`, `Pacote de ${total} sessões criado. Agora envie o resumo.`));
 }
 
 /** Chamado antes de abrir o WhatsApp com o resumo: guarda a cópia exata do texto. */
@@ -246,7 +252,7 @@ export async function marcarAceite(fd: FormData) {
     depois: { hash },
   });
   revalidatePath('/', 'layout');
-  redirect(`/clientes/${p.cliente_id}?ok=aceite`);
+  redirect(feito(`/clientes/${p.cliente_id}?ok=aceite`, 'Aceite registrado.'));
 }
 
 export async function marcarDesistencia(fd: FormData) {
@@ -257,7 +263,7 @@ export async function marcarDesistencia(fd: FormData) {
   await supabase.from('pacotes').update({ situacao: 'desistiu' }).eq('id', pacoteId);
   await evento(supabase, { cliente_id: p.cliente_id, entidade: 'pacote', entidade_id: pacoteId, tipo: 'desistiu', descricao: 'Cliente desistiu do pacote' });
   revalidatePath('/', 'layout');
-  redirect(`/clientes/${p.cliente_id}`);
+  redirect(feito(`/clientes/${p.cliente_id}`, 'Desistência registrada.'));
 }
 
 // ---------------------------------------------------------------- Sessões
@@ -289,7 +295,7 @@ export async function marcarSessao(fd: FormData) {
   if (error || !data) falhou('Não foi possível marcar a sessão.', voltar);
   await evento(supabase, { cliente_id, entidade: 'sessao', entidade_id: data.id, tipo: 'criou', descricao: `Sessão marcada para ${dia.split('-').reverse().join('/')} às ${h}${pacote ? ' (pacote)' : ' (avulsa)'}` });
   revalidatePath('/', 'layout');
-  redirect(`/agenda?dia=${dia}`);
+  redirect(feito(`/agenda?dia=${dia}`, `Sessão marcada para ${ddmm(dia)} às ${h}${pacote ? ' (pacote)' : ' (avulsa)'}.`));
 }
 
 export async function remarcarSessao(fd: FormData) {
@@ -304,27 +310,27 @@ export async function remarcarSessao(fd: FormData) {
   await supabase.from('sessoes').update({ inicio, lembrete_aberto_em: null }).eq('id', id);
   await evento(supabase, { cliente_id: antes.cliente_id, entidade: 'sessao', entidade_id: id, tipo: 'corrigiu', descricao: `Sessão remarcada para ${dia.split('-').reverse().join('/')} às ${h}`, antes: { inicio: antes.inicio }, depois: { inicio } });
   revalidatePath('/', 'layout');
-  redirect(`/sessoes/${id}`);
+  redirect(feito(`/sessoes/${id}`, `Sessão remarcada para ${ddmm(dia)} às ${h}.`));
 }
 
 export async function cancelarSessao(fd: FormData) {
   const { supabase } = await escritor();
   const id = texto(fd, 'id');
   const desconta = texto(fd, 'desconta') === 'sim';
-  const { data: s } = await supabase.from('sessoes').select('cliente_id, pacote_id, situacao').eq('id', id).single();
+  const { data: s } = await supabase.from('sessoes').select('cliente_id, pacote_id, situacao, inicio').eq('id', id).single();
   if (!s) falhou('Sessão não encontrada.', '/agenda');
   if (s.situacao !== 'marcada') redirect(`/clientes/${s.cliente_id}`); // já cancelada (toque duplo)
   // Cancelada com desconto entra no saldo (ver view pacotes_saldo).
   await supabase.from('sessoes').update({ situacao: 'cancelada', desconta: desconta && !!s.pacote_id }).eq('id', id);
   await evento(supabase, { cliente_id: s.cliente_id, entidade: 'sessao', entidade_id: id, tipo: 'cancelou', descricao: desconta && s.pacote_id ? 'Sessão cancelada e descontada do pacote' : 'Sessão cancelada sem desconto' });
   revalidatePath('/', 'layout');
-  redirect(`/clientes/${s.cliente_id}`);
+  redirect(feito(`/agenda?dia=${diaSP(new Date(s.inicio))}`, desconta && s.pacote_id ? 'Sessão cancelada e descontada do pacote.' : 'Sessão cancelada, sem desconto.'));
 }
 
 export async function sessaoFeita(fd: FormData) {
   const { supabase } = await escritor();
   const id = texto(fd, 'id');
-  const { data: s } = await supabase.from('sessoes').select('cliente_id, pacote_id, situacao').eq('id', id).single();
+  const { data: s } = await supabase.from('sessoes').select('cliente_id, pacote_id, situacao, inicio').eq('id', id).single();
   if (!s) falhou('Sessão não encontrada.', '/');
   // Segundo toque: a sessão já está feita; não recalcula (evitaria virar avulsa na última do pacote).
   if (s.situacao !== 'marcada') redirect(`/sessoes/${id}/feita`);
@@ -339,7 +345,7 @@ export async function sessaoFeita(fd: FormData) {
   await supabase.from('sessoes').update({ situacao: 'feita', pacote_id: pacoteId, desconta: !!pacoteId }).eq('id', id);
   await evento(supabase, { cliente_id: s.cliente_id, entidade: 'sessao', entidade_id: id, tipo: 'feita', descricao: pacoteId ? 'Sessão feita (descontada do pacote)' : 'Sessão avulsa feita' });
   revalidatePath('/', 'layout');
-  redirect(`/sessoes/${id}/feita`);
+  redirect(feito(`/sessoes/${id}/feita`, 'Sessão registrada como feita.'));
 }
 
 export async function desfazerFeita(fd: FormData) {
@@ -350,7 +356,7 @@ export async function desfazerFeita(fd: FormData) {
   await supabase.from('sessoes').update({ situacao: 'marcada', desconta: true }).eq('id', id);
   await evento(supabase, { cliente_id: s.cliente_id, entidade: 'sessao', entidade_id: id, tipo: 'corrigiu', descricao: 'Correção: sessão voltou para "marcada" (não foi feita)', antes: { situacao: 'feita' }, depois: { situacao: 'marcada' } });
   revalidatePath('/', 'layout');
-  redirect(`/sessoes/${id}`);
+  redirect(feito(`/sessoes/${id}`, 'Corrigido: a sessão voltou para marcada e o saldo voltou.'));
 }
 
 /** Chamado antes de abrir o WhatsApp com um lembrete ou saldo. */
@@ -402,7 +408,7 @@ export async function registrarPagamento(fd: FormData) {
   const nomeForma = { pix: 'Pix', cartao: 'Cartão', dinheiro: 'Dinheiro' }[forma];
   await evento(supabase, { cliente_id, entidade: 'pagamento', entidade_id: pg.id, tipo: 'recebeu', descricao: `Recebido ${reais(valor)} no ${nomeForma}${pacote_id ? ' (pacote)' : ' (sessão avulsa)'}` });
   revalidatePath('/', 'layout');
-  redirect(voltar);
+  redirect(feito(voltar, `Pagamento de ${reais(valor)} no ${nomeForma} registrado.`));
 }
 
 export async function anularPagamento(fd: FormData) {
@@ -415,7 +421,7 @@ export async function anularPagamento(fd: FormData) {
   if (pg.sessao_id) await supabase.from('sessoes').update({ pago: false }).eq('id', pg.sessao_id);
   await evento(supabase, { cliente_id: pg.cliente_id, entidade: 'pagamento', entidade_id: id, tipo: 'anulou', descricao: `Correção: pagamento de ${reais(pg.valor_centavos)} anulado` });
   revalidatePath('/', 'layout');
-  redirect(`/clientes/${pg.cliente_id}`);
+  redirect(feito(`/clientes/${pg.cliente_id}?aba=pagamentos`, 'Pagamento anulado. Ficou riscado no histórico.'));
 }
 
 // ---------------------------------------------------------------- Licença
@@ -424,5 +430,5 @@ export async function verificarLicencaAgora() {
   const { estadoLicenca } = await import('@/lib/licenca');
   await estadoLicenca(true);
   revalidatePath('/', 'layout');
-  redirect('/instalacao?verificado=1');
+  redirect(feito('/instalacao', 'Licença verificada agora.'));
 }

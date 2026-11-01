@@ -1,5 +1,7 @@
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { Cabecalho } from '@/components/Cabecalho';
+import { Toast } from '@/components/Toast';
 import { BottomNav } from '@/components/BottomNav';
 import { estadoLicenca } from '@/lib/licenca';
 
@@ -19,6 +21,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <Cabecalho />
       <main>{children}</main>
       <BottomNav />
+      <Suspense><Toast /></Suspense>
     </div>
   );
 }

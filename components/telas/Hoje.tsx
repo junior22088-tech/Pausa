@@ -1,13 +1,11 @@
 import Link from 'next/link';
-import { AlertCircle, CalendarPlus, Check, CircleDollarSign, Hourglass, MessageCircle, Plus, Settings2 } from 'lucide-react';
-import { Aviso, Chip, Fab, Secao, Vazio, btnPequeno, btnPrimario, btnSecundario } from '@/components/ui';
-import { Enviar } from '@/components/Enviar';
-import { WhatsAppButton } from '@/components/WhatsAppButton';
+import { AlertCircle, CalendarPlus, Check, ChevronRight, CircleDollarSign, Hourglass, MessageCircle, Plus, Settings2 } from 'lucide-react';
+import { Aviso, Chip, Fab, Secao, Vazio, btnPrimario } from '@/components/ui';
 
 export type PendenciaHoje = { id: string; tipo: 'aceite' | 'pacote' | 'avulsa'; nome: string; valor?: string; href: string };
 export type SessaoHoje = {
   id: string; hora: string; nome: string; situacao: 'marcada' | 'feita';
-  tipo: 'pacote' | 'avulsa'; lembreteAberto: boolean; whatsappHref: string;
+  tipo: 'pacote' | 'avulsa'; lembreteAberto: boolean;
 };
 
 const PEND = {
@@ -17,12 +15,10 @@ const PEND = {
 };
 
 export function TelaHoje({
-  dataExtenso, hojeISO, configurado, erro, pendencias, sessoes, sessaoFeita, registrarLembrete,
+  dataExtenso, hojeISO, configurado, erro, pendencias, sessoes,
 }: {
   dataExtenso: string; hojeISO: string; configurado: boolean; erro?: string;
   pendencias: PendenciaHoje[]; sessoes: SessaoHoje[];
-  sessaoFeita: (fd: FormData) => Promise<void>;
-  registrarLembrete: (sessaoId: string) => () => Promise<void>;
 }) {
   const feitas = sessoes.filter((s) => s.situacao === 'feita').length;
   return (
@@ -80,35 +76,26 @@ export function TelaHoje({
           <ol className="relative space-y-3 before:absolute before:bottom-4 before:left-[1.65rem] before:top-4 before:w-px before:bg-stone-200">
             {sessoes.map((s) => (
               <li key={s.id} className="relative flex gap-3">
-                <div className="z-[1] flex w-14 shrink-0 flex-col items-center pt-3">
+                <div className="z-[1] flex w-14 shrink-0 flex-col items-center pt-5">
                   <span className={`rounded-full px-1.5 text-[0.9rem] font-bold tabular-nums ${s.situacao === 'feita' ? 'bg-stone-50 text-stone-400' : 'bg-stone-50 text-stone-900'}`}>{s.hora}</span>
                 </div>
-                <div className={`min-w-0 flex-1 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-stone-200/80 ${s.situacao === 'feita' ? 'opacity-75' : ''}`}>
-                  <Link href={`/sessoes/${s.id}`} className="block">
-                    <span className="flex items-center justify-between gap-2">
-                      <span className="truncate text-base font-semibold">{s.nome}</span>
+                <Link
+                  href={`/sessoes/${s.id}`}
+                  className={`flex min-h-16 min-w-0 flex-1 items-center gap-3 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-stone-200/80 hover:bg-stone-50 active:bg-stone-100 ${s.situacao === 'feita' ? 'opacity-75' : ''}`}
+                >
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-base font-semibold">{s.nome}</span>
+                    <span className="mt-1 flex flex-wrap items-center gap-1.5">
                       {s.situacao === 'feita'
                         ? <Chip tom="verde"><Check className="size-3.5" aria-hidden />Feita</Chip>
                         : <Chip>{s.tipo === 'pacote' ? 'Pacote' : 'Avulsa'}</Chip>}
-                    </span>
-                    {s.lembreteAberto && s.situacao !== 'feita' && (
-                      <span className="mt-0.5 flex items-center gap-1 text-[0.8rem] text-stone-500"><MessageCircle className="size-3.5" aria-hidden />Lembrete aberto no WhatsApp</span>
-                    )}
-                  </Link>
-                  {s.situacao === 'marcada' && (
-                    <div className="mt-3 flex gap-2">
-                      <form action={sessaoFeita} className="flex-1">
-                        <input type="hidden" name="id" value={s.id} />
-                        <Enviar className={`${btnPrimario} ${btnPequeno} w-full`}><Check className="size-4" aria-hidden />Feita</Enviar>
-                      </form>
-                      {!s.lembreteAberto && (
-                        <WhatsAppButton className={`${btnSecundario} ${btnPequeno} flex-1`} href={s.whatsappHref} registrar={registrarLembrete(s.id)}>
-                          <MessageCircle className="size-4" aria-hidden />Lembrar
-                        </WhatsAppButton>
+                      {s.lembreteAberto && s.situacao !== 'feita' && (
+                        <span className="inline-flex items-center gap-1 text-[0.8rem] text-stone-500"><MessageCircle className="size-3.5" aria-hidden />lembrete enviado</span>
                       )}
-                    </div>
-                  )}
-                </div>
+                    </span>
+                  </span>
+                  <ChevronRight className="size-5 shrink-0 text-stone-400" aria-hidden />
+                </Link>
               </li>
             ))}
           </ol>

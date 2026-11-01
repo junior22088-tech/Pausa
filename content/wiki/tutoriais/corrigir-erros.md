@@ -4,11 +4,11 @@ No Pausa nada é apagado: toda correção vira uma nova linha no histórico. Ass
 
 | Errei em… | Como corrigir |
 |---|---|
-| Nome ou telefone | Cliente → **corrigir** (ao lado do telefone) |
+| Nome ou telefone | Cliente → **Editar** (no topo) |
 | Dia/horário da sessão | Sessão → **Remarcar** |
-| Marquei feita sem ter sido | Sessão → **Correção: não foi feita** |
-| Pagamento | Cliente → Pagamentos → **Anular**, depois registre o certo |
-| Sessão que não vai acontecer | Sessão → **Cancelar sessão** (com ou sem desconto) |
+| Marquei feita sem ter sido | Sessão → **Outras ações** → **Não foi feita** |
+| Pagamento | Cliente → aba **Pagamentos** → **Anular**, depois registre o certo |
+| Sessão que não vai acontecer | Sessão → **Outras ações** → **Cancelar sessão** (com ou sem desconto) |
 
 ## Ver o histórico
 

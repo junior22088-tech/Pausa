@@ -2,7 +2,7 @@
 
 ## Enviar um lembrete
 
-Na aba **Hoje** toque em **Lembrar** (ou, dentro da sessão, **Lembrar no WhatsApp**). O WhatsApp abre com:
+Toque na sessão (na aba **Hoje** ou na **Agenda**) e depois em **Lembrar no WhatsApp**. O WhatsApp abre com:
 
 ```
 Carla Mendes – massoterapia

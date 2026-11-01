@@ -2,7 +2,7 @@
 
 ## Marcar como feita
 
-Ao terminar o atendimento, na aba **Hoje** (ou abrindo a sessão), toque em **Feita**.
+Ao terminar o atendimento, toque na sessão (na aba **Hoje** ou na **Agenda**) e depois em **Marcar como feita**. Um aviso no rodapé confirma o registro.
 
 O Pausa abre a tela de saldo, já com a conta pronta:
 
@@ -27,4 +27,4 @@ Quando o saldo chega a zero, aparece **Pacote acabou: criar novo**. Se a cliente
 
 ## Marquei feita por engano
 
-Abra a sessão → **Correção: não foi feita**. Ela volta para marcada e o saldo volta. Depois você pode enviar o **saldo corrigido** à cliente.
+Abra a sessão → **Outras ações** → **Não foi feita**. Ela volta para marcada e o saldo volta. Depois você pode enviar o **saldo corrigido** à cliente.
