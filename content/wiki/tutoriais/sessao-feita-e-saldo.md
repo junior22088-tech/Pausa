@@ -1,30 +1,30 @@
 # Sessão feita e saldo
 
-## Marcar como feita
+:::passo Marque como feita | sessao.webp
+Ao terminar o atendimento, abra a sessão e toque em **Marcar como feita**. Se é de pacote, desconta 1 sessão do serviço.
+:::
 
-Ao terminar o atendimento, toque na sessão (na aba **Hoje** ou na **Agenda**) e depois em **Marcar como feita**. Um aviso no rodapé confirma o registro.
-
-O Pausa abre a tela de saldo, já com a conta pronta:
+:::passo Envie o saldo | sessao-saldo.webp
+O Pausa abre o saldo com a conta pronta. Toque em **Enviar saldo** para mandar à cliente pelo WhatsApp:
 
 ```
-Carla Mendes – massoterapia
+Marta Souza – massoterapia
 Olá, Ana! Sessão de hoje registrada.
 *Restam 7 de 10 sessões* no seu pacote.
 Válido até 30 de janeiro de 2027.
 ```
 
-Toque em **Enviar saldo** e envie (ou **Agora não**). Isso evita a dúvida "quantas ainda tenho?".
+Sessão avulsa? Aparece **Recebi** para anotar o pagamento.
+:::
 
 ## Como o saldo é calculado
 
-Saldo = total do pacote − sessões **feitas** − sessões **canceladas com desconto**.
+Saldo = total − sessões **feitas** − sessões **canceladas com desconto**. Ele nunca é digitado: é sempre recalculado. Se você corrigir uma sessão, o saldo se corrige sozinho. Em pacotes com vários serviços, cada serviço tem o próprio saldo.
 
-O saldo nunca é digitado: ele é sempre recalculado. Por isso, se você corrigir uma sessão, o saldo se corrige sozinho.
+:::dica
+Quando o saldo chega a zero, aparece **Pacote acabou: criar novo**. Se um serviço do pacote acabou, a sessão daquele serviço vira avulsa.
+:::
 
-## Pacote acabou
-
-Quando o saldo chega a zero, aparece **Pacote acabou: criar novo**. Se a cliente vier sem pacote com saldo, a sessão feita é **avulsa** e o Pausa mostra **Recebi o pagamento**.
-
-## Marquei feita por engano
-
-Abra a sessão → **Outras ações** → **Não foi feita**. Ela volta para marcada e o saldo volta. Depois você pode enviar o **saldo corrigido** à cliente.
+:::atencao
+Marcou feita por engano? Abra a sessão → **Outras ações** → **Não foi feita**. Ela volta para marcada e o saldo volta.
+:::

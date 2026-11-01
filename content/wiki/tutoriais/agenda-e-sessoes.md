@@ -1,52 +1,43 @@
-# Agenda: marcar, remarcar e cancelar
+# Marcar a primeira sessão
 
-Antes de marcar, configure uma vez em **Ajustes** (a engrenagem no topo): [serviços, horário de atendimento e folgas](/wiki/tutoriais/horarios-e-servicos). O Pausa usa isso para mostrar só os horários que cabem.
+Antes, configure [serviços e horários](/wiki/tutoriais/horarios-e-servicos): é com eles que o Pausa sabe quais horários cabem.
 
-## Ver o dia
+:::passo Veja o dia em calendário | agenda-dia.webp
+Na aba **Agenda**, escolha o dia na faixa da semana (o ponto verde marca dias com sessão). O dia aparece hora a hora:
 
-A **Agenda** mostra a semana no topo; um ponto verde marca os dias com sessão. As setas trocam de semana e **Hoje** volta para o dia atual.
+- **Sessão**: horário, cliente e serviço. Toque para abrir.
+- **Intervalo**: faixa listrada depois de cada sessão.
+- **Almoço** e **folgas**: faixas cinza e amarela.
+- **Livre 14:00–16:00**: toque para marcar já naquele horário.
 
-Abaixo fica o dia em forma de calendário, hora a hora:
+Toque em **Marcar**.
+:::
 
-- **Sessão**: bloco com horário de início e fim, cliente e serviço. Toque para abrir.
-- **Intervalo**: faixa listrada depois de cada sessão (o tempo de arrumar a sala).
-- **Almoço** e **folgas**: faixas cinza e amarela; ali não aparecem horários normais.
-- **Livre 14:00–16:00**: espaço vazio de pelo menos 30 minutos. Toque para marcar já naquele dia e horário.
+:::passo Escolha cliente, serviço e horário | marcar-horarios.webp
+Escolha a **cliente** e o **serviço** (os do pacote aparecem primeiro, com o saldo) e toque em **Ver horários livres**. Toque num dia da semana e num horário: só aparece o que cabe inteiro, de 15 em 15 minutos.
 
-As ações ficam dentro da sessão, nunca no calendário, para evitar toques sem querer.
+Confira o resumo e toque em **Marcar sessão**. Um aviso confirma.
+:::
 
-## Marcar uma sessão
+:::passo Precisa encaixar fora do expediente? | marcar-fora.webp
+Toque em **Ver horários fora do expediente**: aparecem os horários das 6h às 22h que não batem em outra sessão nem em folga.
+:::
 
-1. **Agenda** → **+ Marcar** (ou toque num espaço **Livre**).
-2. Escolha a **cliente** e o **serviço** → **Ver horários livres**.
-3. Escolha o dia na faixa da semana. Os horários livres aparecem em botões de 15 em 15 minutos. Só aparece o que cabe inteiro: a duração do serviço + o intervalo, sem bater em outra sessão, no almoço ou numa folga.
-4. Toque no horário, confira o resumo e toque em **Marcar sessão**.
+:::dica
+O Pausa nunca deixa duas sessões no mesmo horário, contando o intervalo, nem marcando em dois celulares ao mesmo tempo. Se alguém ocupar o horário enquanto você escolhia, ele avisa quem está lá e sugere os próximos livres.
+:::
 
-Se a cliente tem um pacote em uso, a sessão é ligada a ele automaticamente. Se não tem, fica **avulsa** com o preço do serviço (dá para mudar o valor antes de confirmar).
+## Remarcar e cancelar
 
-**Precisa encaixar antes das 9h, depois do expediente ou no almoço?** Toque em **Ver horários fora do expediente**: aparecem os horários das 6h às 22h que não batem em outra sessão nem em folga.
+:::passo Abra a sessão | sessao.webp
+Toque na sessão (na aba **Hoje** ou na **Agenda**):
 
-## Conflito
+- **Remarcar**: escolha o novo dia e horário na mesma grade de horários livres. A sessão mantém o serviço e a duração.
+- **Outras ações → Cancelar sessão**: se é de pacote, escolha **Não, avisou no prazo** (saldo igual) ou **Sim, conforme a regra** (conta como usada).
+:::
 
-O Pausa nunca deixa duas sessões no mesmo horário, contando o intervalo. Se alguém marcar o horário enquanto você escolhia (em outro celular, por exemplo), aparece um aviso dizendo **qual sessão ocupa o horário** e sugerindo os próximos livres. A trava está no banco de dados, então vale mesmo com dois aparelhos ao mesmo tempo.
-
-## Remarcar
-
-Abra a sessão → **Remarcar** → escolha o novo dia e horário na mesma grade de horários livres → confirme. A sessão mantém a duração e o serviço. Um aviso confirma o novo horário; o antigo fica no histórico.
-
-## Sessão que caiu numa folga
-
-Se você cadastrar uma folga num dia que já tinha sessões, o Pausa **não cancela nada sozinho**. A sessão mostra um aviso amarelo com dois botões: **Avisar** (abre o WhatsApp com uma mensagem pronta para a cliente) e **Remarcar**.
-
-## Cancelar
-
-Abra a sessão → **Outras ações** → **Cancelar sessão**. Se ela é de pacote, o Pausa pergunta **Descontar do pacote?**:
-
-- **Não, avisou no prazo**: o saldo continua igual.
-- **Sim, conforme a regra**: cancelou fora do prazo. A sessão conta como usada.
-
-O horário cancelado fica livre na hora.
-
-## Horário
+:::passo Sessão que caiu numa folga | sessao-folga.webp
+Se você registrar uma folga num dia com sessões, cada sessão mostra um aviso com **Avisar** (WhatsApp pronto) e **Remarcar**. Nada é cancelado sozinho.
+:::
 
 Todos os horários são de Brasília.

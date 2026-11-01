@@ -1,38 +1,26 @@
 import Link from 'next/link';
-import { navegacao } from '@/lib/wiki';
+import { ArrowUpRight } from 'lucide-react';
 
-export const metadata = { title: 'Wiki · Pausa' };
+export const metadata = { title: 'Central de ajuda · Pausa' };
 
-function Menu() {
+export default function AjudaLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
-      {navegacao().map((s) => (
-        <div key={s.titulo} className="mb-4">
-          <p className="mb-1 text-sm font-bold uppercase tracking-wide text-stone-500">{s.titulo}</p>
-          <ul>
-            {s.itens.map((i) => (
-              <li key={i.slug}><Link href={`/wiki/${i.slug}`} className="block py-1 text-base text-stone-800 hover:text-emerald-800">{i.titulo}</Link></li>
-            ))}
-          </ul>
+    <div className="min-h-dvh bg-stone-50">
+      <header className="sticky top-0 z-20 border-b border-stone-200/80 bg-white/90 backdrop-blur">
+        <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
+          <Link href="/wiki" className="flex items-baseline gap-2">
+            <span className="text-lg font-bold text-emerald-800">Pausa</span>
+            <span className="text-[0.9rem] font-semibold text-stone-500">Central de ajuda</span>
+          </Link>
+          <Link href="/" className="inline-flex min-h-10 items-center gap-1 rounded-full px-3 text-[0.9rem] font-semibold text-emerald-800 hover:bg-emerald-50">
+            Abrir o app<ArrowUpRight className="size-4" aria-hidden />
+          </Link>
         </div>
-      ))}
-    </>
-  );
-}
-
-export default function WikiLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="mx-auto max-w-5xl px-4 py-6 md:flex md:gap-8">
-      <aside className="mb-6 md:w-64 md:shrink-0">
-        <Link href="/wiki" className="mb-1 block text-xl font-bold text-emerald-800">Wiki do Pausa</Link>
-        <Link href="/" className="mb-4 block text-base text-stone-600 underline">Abrir o app</Link>
-        <details className="md:hidden">
-          <summary className="min-h-12 cursor-pointer rounded-lg border border-stone-300 px-3 py-2 text-base font-semibold">Todas as páginas</summary>
-          <div className="pt-3"><Menu /></div>
-        </details>
-        <div className="hidden md:block"><Menu /></div>
-      </aside>
-      <article className="wiki min-w-0 flex-1 text-base leading-relaxed">{children}</article>
+      </header>
+      {children}
+      <footer className="mx-auto max-w-4xl px-4 py-10 text-center text-[0.85rem] text-stone-500">
+        Pausa · feito para quem atende com hora marcada
+      </footer>
     </div>
   );
 }

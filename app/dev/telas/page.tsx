@@ -13,10 +13,19 @@ import { TelaSessao } from '@/components/telas/Sessao';
 import { Toast } from '@/components/Toast';
 import { ItensPacote } from '@/components/ItensPacote';
 import { Titulo, btnPrimario } from '@/components/ui';
+import { TelaAjustes } from '@/components/telas/Ajustes';
+import { TelaServicos } from '@/components/telas/Servicos';
+import { TelaHorarios } from '@/components/telas/Horarios';
+import { TelaFolgas } from '@/components/telas/Folgas';
+import { TelaResumoPacote } from '@/components/telas/ResumoPacote';
+import NovoCliente from '@/app/(app)/clientes/novo/page';
+import { msgResumoPacote, msgSaldo } from '@/lib/format';
+import { registrarEnvioResumo } from '@/lib/actions';
 
 export const dynamic = 'force-dynamic';
 
 const WA = 'https://wa.me/5511987654321?text=Ol%C3%A1';
+const PROF = { nome_mensagem: 'Marta Souza', especialidade: 'massoterapia', endereco: 'Rua das Flores, 120 – sala 4', regra_cancelamento: 'Remarcações e cancelamentos com pelo menos 24 horas de antecedência. Sem aviso, a sessão é descontada do pacote.' };
 
 export default async function Galeria({ searchParams }: { searchParams: Promise<{ tela?: string; aba?: string; vazio?: string }> }) {
   if (process.env.PAUSA_GALERIA !== '1') notFound();
@@ -82,6 +91,46 @@ export default async function Galeria({ searchParams }: { searchParams: Promise<
         sessaoFeita={sessaoFeita} desfazerFeita={desfazerFeita} cancelarSessao={cancelarSessao}
         registrarLembrete={registrarWhatsApp.bind(null, 's2', 'lembrete')} registrarAvisoFolga={registrarWhatsApp.bind(null, 's2', 'aviso_folga')}
       />
+    );
+  } else if (tela === 'ajustes') {
+    conteudo = <TelaAjustes email="marta@exemplo.com" p={PROF} />;
+  } else if (tela === 'servicos') {
+    const ativos = [
+      { id: 's1', nome: 'Drenagem linfática', duracao_min: 50, preco_centavos: 11000 },
+      { id: 's2', nome: 'Massagem relaxante', duracao_min: 60, preco_centavos: 12000 },
+    ];
+    conteudo = <TelaServicos ativos={semDados ? [] : ativos} emEdicao={null} mostrarForm={semDados || aba === 'novo'} novo={aba === 'novo' ? '1' : undefined} intervalo={15} />;
+  } else if (tela === 'horarios') {
+    conteudo = <TelaHorarios intervalo={15} cfg={(d) => ({ atende: d >= 1 && d <= 5, inicio_min: 540, fim_min: 1080, almoco_inicio_min: d >= 1 && d <= 5 ? 720 : null, almoco_fim_min: d >= 1 && d <= 5 ? 780 : null })} />;
+  } else if (tela === 'folgas') {
+    const futuros = [{ id: 'b1', data_inicio: '2026-11-20', data_fim: '2026-11-20', dia_inteiro: true, inicio_min: null, fim_min: null, motivo: 'Curso' }];
+    const afetadas = [{ id: 's9', inicio: '2026-11-20T13:00:00.000Z', duracao_min: 60, clientes: { nome: 'Beatriz Lima', telefone: '5511912345678' } }];
+    conteudo = <TelaFolgas futuros={semDados ? [] : futuros} afetadasPor={() => afetadas} prof={PROF} hoje="2026-11-01" mostrarForm={semDados || aba === 'nova'} nova={aba === 'nova' ? '1' : undefined} />;
+  } else if (tela === 'novo-cliente') {
+    conteudo = <NovoCliente searchParams={Promise.resolve({})} />;
+  } else if (tela === 'resumo') {
+    const itens = [{ nome: 'Massagem relaxante', quantidade: 6, duracao_min: 60 }, { nome: 'Drenagem linfática', quantidade: 4, duracao_min: 50 }];
+    const texto = msgResumoPacote(PROF, 'Beatriz', itens, 100000, false, '2027-01-30', PROF.regra_cancelamento);
+    conteudo = (
+      <TelaResumoPacote id="k1" texto={texto} aceite={null} precisaReenviar={false} editavel
+        p={{ cliente_id: 'c2', situacao: 'aguardando_aceite', versao: 1, clientes: { nome: 'Beatriz Lima', telefone: '5511912345678' } }}
+        registrar={registrarEnvioResumo.bind(null, 'k1', texto)} />
+    );
+  } else if (tela === 'saldo') {
+    // Réplica da tela app/(app)/sessoes/[id]/feita com dados de exemplo.
+    const { Cartao, btnSecundario } = await import('@/components/ui');
+    const { WhatsAppButton } = await import('@/components/WhatsAppButton');
+    conteudo = (
+      <div className="space-y-4">
+        <Cartao>
+          <p className="text-lg">Ana Paula Ribeiro</p>
+          <p className="text-4xl font-bold">Restam 7 de 10</p>
+          <ul className="mt-2 text-base text-stone-600"><li>Massagem relaxante: 4 de 6</li><li>Drenagem linfática: 3 de 4</li></ul>
+        </Cartao>
+        <WhatsAppButton className={`${btnPrimario} w-full`} href={WA} registrar={registrarWhatsApp.bind(null, 's1', 'saldo')}>Enviar saldo</WhatsAppButton>
+        <a href="#" className={`${btnSecundario} w-full`}>Agora não</a>
+        <p className="hidden">{msgSaldo(PROF, 'Ana', 7, 10, '2027-01-30')}</p>
+      </div>
     );
   } else if (tela === 'pacote' || tela === 'pacote-editar') {
     const editar = tela === 'pacote-editar';

@@ -56,7 +56,7 @@ export default async function Login({ searchParams }: { searchParams: Promise<Bu
         </form>
       )}
 
-      <p className="mt-6 text-base text-stone-500"><a className="underline" href="/wiki/tutoriais/primeiros-passos">Como funciona</a></p>
+      <p className="mt-6 text-base text-stone-500"><a className="underline" href="/wiki">Como funciona</a></p>
     </main>
   );
 }

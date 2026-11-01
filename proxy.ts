@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { CONFIGURADO, SUPABASE_URL, SUPABASE_KEY } from '@/lib/supabase/config';
 
-const PUBLICAS = ['/login', '/auth', '/wiki', '/configurar', '/dev', '/manifest.webmanifest', '/icon'];
+const PUBLICAS = ['/login', '/auth', '/wiki', '/ajuda', '/configurar', '/dev', '/manifest.webmanifest', '/icon'];
 
 // Renova a sessão do Supabase a cada requisição e protege as telas do app.
 export async function proxy(request: NextRequest) {
@@ -45,5 +45,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|svg|ico)$).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|svg|ico|webp|jpg)$).*)'],
 };

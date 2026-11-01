@@ -1,32 +1,23 @@
-# Cadastrar e corrigir clientes
+# Cadastrar a primeira cliente
 
-## Cadastrar
+:::passo Abra a aba Clientes | clientes-lista.webp
+Toque em **Clientes**, embaixo, e depois no botão verde **Cliente**. Para achar alguém depois, digite parte do nome na busca.
+:::
 
-1. Aba **Clientes** → botão **+ Cliente** (no canto inferior).
-2. Preencha **nome** e **WhatsApp com DDD** (ex.: 11 98765-4321).
-3. Toque em **Salvar**.
+:::passo Nome e WhatsApp | cliente-novo.webp
+Preencha o **nome** e o **WhatsApp com DDD** (ex.: 11 98765-4321) e toque em **Salvar**. Não precisa digitar o 55.
+:::
 
-O número é guardado com o 55 do Brasil na frente; você não precisa digitar o 55. Números fora do Brasil não são aceitos nesta versão.
+:::passo A ficha da cliente | cliente-ficha.webp
+Na ficha ficam os atalhos **WhatsApp**, **Marcar** e **Novo pacote**, o cartão do pacote e as abas **Sessões**, **Pagamentos** e **Histórico**.
 
-> O Pausa não importa contatos da agenda do celular. É de propósito: você cadastra só quem é cliente, uma a uma.
+Para corrigir nome ou telefone, toque em **Editar**, no topo. A correção fica no histórico, sem apagar nada.
+:::
 
-## Achar uma cliente
+:::atencao
+Não anote informações de saúde no Pausa. Ele não tem ficha de saúde nem campo de anotações livres nesta versão, de propósito.
+:::
 
-Na aba **Clientes**, digite parte do nome na busca.
-
-## Corrigir nome ou telefone
-
-1. Abra a cliente e toque em **Editar**, no topo.
-2. Altere e toque em **Salvar correção**.
-
-A correção fica registrada no **histórico** da cliente (o que era antes e o que ficou), sem apagar nada.
-
-## O que tem na página da cliente
-
-- No topo: nome, telefone e atalhos para **WhatsApp**, **Marcar** e **Novo pacote**.
-- **Pacote**: sessões restantes, barra de progresso, validade e se está aceito e pago.
-- Abas **Sessões** (próximas), **Pagamentos** e **Histórico** (tudo o que aconteceu, em ordem).
-
-Na lista de clientes, a etiqueta ao lado do nome mostra quantas sessões restam no pacote (ex.: 7/10).
-
-O Pausa **não tem ficha de saúde nem campo de anotações livres** nesta versão. Assim, nenhum dado sensível de saúde fica guardado.
+:::dica
+O Pausa não importa a agenda de contatos do celular: você cadastra só quem é cliente, uma a uma.
+:::

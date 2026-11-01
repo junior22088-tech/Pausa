@@ -14,14 +14,10 @@ O Pausa funciona direto no navegador. Instalar é opcional, mas deixa um ícone 
 2. Toque no botão de compartilhar (quadrado com seta para cima).
 3. Role e toque em **Adicionar à Tela de Início**.
 
-### Entrar no Pausa instalado no iPhone
+:::atencao
+**iPhone, entrando pelo e-mail:** o link do e-mail abre no Safari, não no ícone instalado. No Pausa instalado, peça o acesso e, no e-mail, **copie o código de 6 números** em vez de tocar no link. Ou simplesmente entre com e-mail e senha.
+:::
 
-O link do e-mail abre no Safari, não no ícone instalado. Por isso:
-
-1. No Pausa instalado, digite seu e-mail.
-2. No e-mail recebido, **não toque no link**: copie o **código de 6 números**.
-3. Volte ao Pausa e digite o código.
-
-## Não há notificações
-
+:::dica
 O Pausa não manda notificação no celular. O que é do dia aparece na aba **Hoje** sempre que você abre.
+:::

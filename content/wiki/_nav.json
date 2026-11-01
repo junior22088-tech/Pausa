@@ -1,72 +1,123 @@
 [
   {
-    "titulo": "Instalação",
-    "itens": [
-      {
-        "slug": "instalacao/passo-a-passo",
-        "titulo": "Instalar o Pausa"
-      },
-      {
-        "slug": "instalacao/licenca",
-        "titulo": "Licença: ativar, renovar, só leitura"
-      }
-    ]
-  },
-  {
-    "titulo": "Tutoriais de uso",
+    "id": "primeiros-acessos",
+    "titulo": "Primeiros acessos",
+    "descricao": "Do primeiro login à primeira sessão feita, passo a passo.",
+    "icone": "rocket",
+    "trilha": true,
     "itens": [
       {
         "slug": "tutoriais/primeiros-passos",
-        "titulo": "Primeiros passos"
+        "titulo": "Conheça o Pausa",
+        "descricao": "As três abas e o que cada uma faz."
       },
       {
-        "slug": "tutoriais/horarios-e-servicos",
-        "titulo": "Serviços, horários e folgas"
+        "slug": "comecar/entrar",
+        "titulo": "Entrar pela primeira vez",
+        "descricao": "Criar sua conta e entrar com senha ou código."
       },
       {
         "slug": "tutoriais/instalar-no-celular",
-        "titulo": "Instalar no celular"
+        "titulo": "Instalar no celular",
+        "descricao": "Um ícone na tela inicial, como um aplicativo."
+      },
+      {
+        "slug": "comecar/suas-mensagens",
+        "titulo": "Ajustar suas mensagens",
+        "descricao": "Seu nome, endereço e regra de cancelamento."
+      },
+      {
+        "slug": "tutoriais/horarios-e-servicos",
+        "titulo": "Serviços, horários e folgas",
+        "descricao": "O que você atende, quando e quanto tempo leva."
       },
       {
         "slug": "tutoriais/clientes",
-        "titulo": "Cadastrar e corrigir clientes"
-      },
-      {
-        "slug": "tutoriais/agenda-e-sessoes",
-        "titulo": "Agenda: marcar, remarcar e cancelar"
+        "titulo": "Cadastrar a primeira cliente",
+        "descricao": "Nome e WhatsApp. Só isso."
       },
       {
         "slug": "tutoriais/pacotes-e-aceite",
-        "titulo": "Pacotes e aceite do cliente"
+        "titulo": "Criar um pacote e pedir o aceite",
+        "descricao": "Serviços, valor, resumo no WhatsApp e aceite."
+      },
+      {
+        "slug": "tutoriais/agenda-e-sessoes",
+        "titulo": "Marcar a primeira sessão",
+        "descricao": "Calendário, horários livres e remarcação."
       },
       {
         "slug": "tutoriais/sessao-feita-e-saldo",
-        "titulo": "Sessão feita e saldo"
-      },
-      {
-        "slug": "tutoriais/pagamentos",
-        "titulo": "Registrar pagamentos"
-      },
-      {
-        "slug": "tutoriais/lembretes",
-        "titulo": "Lembretes pelo WhatsApp"
-      },
-      {
-        "slug": "tutoriais/corrigir-erros",
-        "titulo": "Corrigir um erro"
-      },
-      {
-        "slug": "tutoriais/seus-dados",
-        "titulo": "Seus dados e privacidade"
-      },
-      {
-        "slug": "tutoriais/perguntas-frequentes",
-        "titulo": "Perguntas frequentes"
+        "titulo": "Sessão feita e saldo",
+        "descricao": "Registrar o atendimento e avisar quanto resta."
       }
     ]
   },
   {
+    "id": "dia-a-dia",
+    "titulo": "Dia a dia",
+    "descricao": "Lembretes, pagamentos e correções.",
+    "icone": "sun",
+    "itens": [
+      {
+        "slug": "tutoriais/lembretes",
+        "titulo": "Lembretes pelo WhatsApp",
+        "descricao": "Um toque e a mensagem sai do seu WhatsApp."
+      },
+      {
+        "slug": "tutoriais/pagamentos",
+        "titulo": "Registrar pagamentos",
+        "descricao": "Pix, cartão ou dinheiro: anote o que recebeu."
+      },
+      {
+        "slug": "tutoriais/corrigir-erros",
+        "titulo": "Corrigir um erro",
+        "descricao": "Nada é apagado: toda correção fica no histórico."
+      }
+    ]
+  },
+  {
+    "id": "duvidas",
+    "titulo": "Dúvidas e seus dados",
+    "descricao": "Perguntas frequentes e privacidade.",
+    "icone": "help",
+    "itens": [
+      {
+        "slug": "tutoriais/perguntas-frequentes",
+        "titulo": "Perguntas frequentes",
+        "descricao": "Respostas rápidas para o que mais perguntam."
+      },
+      {
+        "slug": "tutoriais/seus-dados",
+        "titulo": "Seus dados",
+        "descricao": "O que o Pausa guarda e como pedir exclusão."
+      }
+    ]
+  },
+  {
+    "id": "instalacao",
+    "titulo": "Instalação e licença",
+    "descricao": "Para quem comprou: instalar e ativar o Pausa.",
+    "icone": "key",
+    "itens": [
+      {
+        "slug": "instalacao/passo-a-passo",
+        "titulo": "Instalar o Pausa",
+        "descricao": "Do zero até o app no ar."
+      },
+      {
+        "slug": "instalacao/licenca",
+        "titulo": "Licença: ativar, renovar, só leitura",
+        "descricao": "Como a chave anual funciona."
+      }
+    ]
+  },
+  {
+    "id": "tecnico",
     "titulo": "Documentação técnica",
+    "descricao": "Para quem mantém o código.",
+    "icone": "code",
+    "tecnico": true,
     "itens": [
       {
         "slug": "tecnico/visao-geral",

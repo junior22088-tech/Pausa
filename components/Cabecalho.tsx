@@ -7,7 +7,7 @@ export function Cabecalho() {
     <header className="mb-3 flex items-center justify-between">
       <Link href="/" className="text-lg font-bold tracking-tight text-emerald-800">Pausa</Link>
       <nav className="-mr-2 flex">
-        <Link href="/wiki/tutoriais/primeiros-passos" className={icone} aria-label="Ajuda"><CircleHelp className="size-[1.35rem]" aria-hidden /></Link>
+        <Link href="/wiki" className={icone} aria-label="Ajuda"><CircleHelp className="size-[1.35rem]" aria-hidden /></Link>
         <Link href="/ajustes" className={icone} aria-label="Ajustes"><Settings className="size-[1.35rem]" aria-hidden /></Link>
       </nav>
     </header>

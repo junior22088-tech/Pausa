@@ -1,46 +1,45 @@
-# Serviços, horário de atendimento e folgas
+# Serviços, horários e folgas
 
-Tudo fica em **Ajustes** (a engrenagem no topo). Configure uma vez; depois a agenda mostra sozinha só os horários que cabem.
+Com isso configurado, a agenda mostra sozinha só os horários que cabem: duração do serviço + intervalo, sem bater em outra sessão, no almoço ou numa folga.
 
-## Serviços
+:::passo Abra Ajustes → Serviços | ajustes-agenda.webp
+Na engrenagem, em **Agenda**, você encontra **Serviços**, **Horários de atendimento** e **Folgas e bloqueios**.
+:::
 
-**Ajustes → Serviços**. Cada serviço tem:
+:::passo Cadastre o que você atende | servicos-novo.webp
+Toque em **Novo serviço** e preencha:
 
-- **Nome**: ex. "Massagem relaxante", "Drenagem linfática".
-- **Duração**: quanto tempo a sessão leva (ex. 60 min).
-- **Preço** (opcional): usado nas sessões avulsas e sugerido no pacote.
+- **Nome**: ex. "Massagem relaxante".
+- **Duração da sessão**: quanto tempo leva (ex. 1 h).
+- **Preço da sessão avulsa** (opcional): usado em sessões sem pacote e somado ao montar pacotes.
 
-Para tirar um serviço da lista, use **Remover da lista**. As sessões antigas continuam com o serviço e a duração da época; mudar a duração hoje não altera o passado.
+Toque em **Salvar serviço**. Repita para cada serviço.
+:::
 
-## Intervalo entre sessões
+:::passo Confira sua lista | servicos-lista.webp
+Toque num serviço para **Editar**. Para tirar da lista, use **Remover da lista**: as sessões antigas continuam com o serviço e a duração da época.
+:::
 
-Também em **Ajustes → Horários**: o tempo entre o fim de uma sessão e o início da próxima (trocar lençol, higienizar). Padrão: 15 minutos. Ele entra na conta dos horários livres e aparece listrado no calendário.
+:::passo Defina os dias e horários | horarios.webp
+Em **Horários de atendimento**:
 
-## Horário de atendimento
-
-**Ajustes → Horários**. Para cada dia da semana:
-
-1. Ligue o dia em que atende (deixe desligado nos dias de descanso).
-2. Escolha **início** e **fim** do expediente.
-3. Se faz pausa, ligue o **almoço** e escolha o horário.
+1. **Intervalo entre sessões**: o tempo de arrumar a sala (padrão 15 min).
+2. Ligue os dias em que atende e escolha **início** e **fim**.
+3. Faz pausa? Marque **Pausa de almoço** e escolha o horário.
 
 Toque em **Salvar horários**. Contas novas já vêm com segunda a sexta, 9h–18h, almoço 12h–13h.
+:::
 
-## Folgas e bloqueios
+:::passo Registre folgas e bloqueios | folgas-nova.webp
+Em **Folgas e bloqueios**:
 
-**Ajustes → Folgas**, no quadro **Nova folga ou bloqueio**. Dá para cadastrar:
+- **Um dia**: só a data **De** (deixe **Até** vazio).
+- **Férias**: data **De** e **Até**.
+- **Só um trecho do dia**: em **Quanto do dia?**, escolha **Só um horário** (ex. dentista das 14h às 16h).
 
-- **Um dia**: só a data de início (deixe **Até** vazio).
-- **Um período** (férias): data de início e de fim.
-- **Só um trecho do dia**: em **Quanto do dia?**, escolha **Só um horário** e os horários (ex. médico das 14h às 16h).
-- **Motivo** (opcional): só você vê.
+Toque em **Registrar folga**. Durante a folga, a agenda não oferece horários.
+:::
 
-Toque em **Registrar folga**. Durante a folga, a agenda não oferece horários, nem os de fora do expediente.
-
-**Já tinha sessão marcada?** O Pausa avisa e lista as sessões afetadas, mas **não cancela nenhuma**. Ao lado de cada uma há o botão **Avisar**, que abre o WhatsApp com uma mensagem pronta pedindo para remarcar. Depois é só remarcar a sessão.
-
-Para desfazer, toque em **Remover folga…** e confirme.
-
-## Pacotes
-
-Ao criar um pacote, escolha o **serviço**. O resumo enviado à cliente mostra "10 sessões de Massagem relaxante (60 min)".
+:::passo Já tinha sessão marcada? Avise | folgas.webp
+O Pausa **não cancela nada sozinho**. Ele lista as sessões que caem na folga, com o botão **Avisar**: abre o WhatsApp com uma mensagem pronta pedindo para remarcar. Depois, remarque a sessão.
+:::
