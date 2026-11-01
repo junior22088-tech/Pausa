@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { CONFIGURADO, SUPABASE_URL, SUPABASE_KEY } from '@/lib/supabase/config';
 
-const PUBLICAS = ['/login', '/auth', '/wiki', '/ajuda', '/configurar', '/dev', '/manifest.webmanifest', '/icon'];
+const PUBLICAS = ['/login', '/auth', '/wiki', '/ajuda', '/landing-teste', '/landing/', '/marca/', '/configurar', '/dev', '/manifest.webmanifest', '/icon'];
 
 // Renova a sessão do Supabase a cada requisição e protege as telas do app.
 export async function proxy(request: NextRequest) {
