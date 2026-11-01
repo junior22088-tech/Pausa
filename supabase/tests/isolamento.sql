@@ -1,0 +1,91 @@
+-- Teste de isolamento entre profissionais.
+-- Roda dentro de uma transação e desfaz tudo no fim (rollback).
+-- Uso: SQL Editor do Supabase, ou `npm run test:db` (PGlite local).
+-- Qualquer falha interrompe com "ISOLAMENTO FALHOU: ...".
+
+begin;
+
+insert into auth.users (id, email) values
+  ('11111111-1111-1111-1111-111111111111', 'ana@teste.local'),
+  ('22222222-2222-2222-2222-222222222222', 'bia@teste.local');
+
+-- Profissional A cria dados ---------------------------------------------------
+set local role authenticated;
+set local request.jwt.claims = '{"sub":"11111111-1111-1111-1111-111111111111"}';
+
+insert into public.clientes (id, nome, telefone)
+  values ('aaaaaaaa-0000-0000-0000-000000000001', 'Cliente da Ana', '5511999990001');
+insert into public.pacotes (id, cliente_id, total_sessoes, valor_centavos, validade_ate, regra_cancelamento)
+  values ('aaaaaaaa-0000-0000-0000-000000000002', 'aaaaaaaa-0000-0000-0000-000000000001', 10, 90000, current_date + 90, 'regra');
+insert into public.sessoes (cliente_id, pacote_id, inicio, situacao)
+  values ('aaaaaaaa-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000002', now(), 'feita');
+insert into public.eventos (cliente_id, entidade, tipo, descricao)
+  values ('aaaaaaaa-0000-0000-0000-000000000001', 'cliente', 'criou', 'teste');
+
+do $$ begin
+  assert (select saldo from public.pacotes_saldo where id = 'aaaaaaaa-0000-0000-0000-000000000002') = 9,
+    'ISOLAMENTO FALHOU: saldo da Ana deveria ser 9';
+end $$;
+
+-- Eventos não podem ser alterados nem apagados (sem permissão de UPDATE/DELETE) --
+do $$
+declare n int;
+begin
+  begin
+    update public.eventos set descricao = 'adulterado';
+    get diagnostics n = row_count;
+    assert n = 0, 'ISOLAMENTO FALHOU: evento foi alterado';
+  exception when insufficient_privilege then null; -- esperado
+  end;
+  begin
+    delete from public.eventos;
+    get diagnostics n = row_count;
+    assert n = 0, 'ISOLAMENTO FALHOU: evento foi apagado';
+  exception when insufficient_privilege then null; -- esperado
+  end;
+end $$;
+
+-- Profissional B não vê nem mexe em nada da A ---------------------------------
+set local request.jwt.claims = '{"sub":"22222222-2222-2222-2222-222222222222"}';
+
+do $$
+declare n int;
+begin
+  assert (select count(*) from public.clientes) = 0, 'ISOLAMENTO FALHOU: B vê clientes da A';
+  assert (select count(*) from public.pacotes) = 0, 'ISOLAMENTO FALHOU: B vê pacotes da A';
+  assert (select count(*) from public.pacotes_saldo) = 0, 'ISOLAMENTO FALHOU: B vê saldo da A';
+  assert (select count(*) from public.sessoes) = 0, 'ISOLAMENTO FALHOU: B vê sessões da A';
+  assert (select count(*) from public.eventos) = 0, 'ISOLAMENTO FALHOU: B vê eventos da A';
+  assert (select count(*) from public.profissionais) = 1, 'ISOLAMENTO FALHOU: B vê outros perfis';
+
+  update public.clientes set nome = 'invadido';
+  get diagnostics n = row_count;
+  assert n = 0, 'ISOLAMENTO FALHOU: B alterou cliente da A';
+
+  delete from public.pacotes;
+  get diagnostics n = row_count;
+  assert n = 0, 'ISOLAMENTO FALHOU: B apagou pacote da A';
+end $$;
+
+-- B não consegue gravar dado em nome da A nem usar o cliente da A --------------
+do $$ begin
+  begin
+    insert into public.clientes (profissional_id, nome, telefone)
+      values ('11111111-1111-1111-1111-111111111111', 'falso', '5511999990002');
+    raise exception 'ISOLAMENTO FALHOU: B gravou cliente em nome da A';
+  exception when insufficient_privilege then null; -- esperado (RLS)
+  end;
+
+  begin
+    insert into public.pacotes (cliente_id, total_sessoes, valor_centavos, validade_ate, regra_cancelamento)
+      values ('aaaaaaaa-0000-0000-0000-000000000001', 5, 100, current_date, 'x');
+    raise exception 'ISOLAMENTO FALHOU: B criou pacote para cliente da A';
+  exception when raise_exception then
+    if sqlerrm like 'ISOLAMENTO FALHOU%' then raise; end if;
+  when foreign_key_violation then null;
+  end;
+end $$;
+
+select 'OK: isolamento entre profissionais confirmado' as resultado;
+
+rollback;

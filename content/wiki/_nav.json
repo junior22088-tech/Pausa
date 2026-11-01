@@ -1,0 +1,35 @@
+[
+  {
+    "titulo": "Tutoriais de uso",
+    "itens": [
+      { "slug": "tutoriais/primeiros-passos", "titulo": "Primeiros passos" },
+      { "slug": "tutoriais/instalar-no-celular", "titulo": "Instalar no celular" },
+      { "slug": "tutoriais/clientes", "titulo": "Cadastrar e corrigir clientes" },
+      { "slug": "tutoriais/agenda-e-sessoes", "titulo": "Agenda: marcar, remarcar e cancelar" },
+      { "slug": "tutoriais/pacotes-e-aceite", "titulo": "Pacotes e aceite do cliente" },
+      { "slug": "tutoriais/sessao-feita-e-saldo", "titulo": "Sessão feita e saldo" },
+      { "slug": "tutoriais/pagamentos", "titulo": "Registrar pagamentos" },
+      { "slug": "tutoriais/lembretes", "titulo": "Lembretes pelo WhatsApp" },
+      { "slug": "tutoriais/corrigir-erros", "titulo": "Corrigir um erro" },
+      { "slug": "tutoriais/seus-dados", "titulo": "Seus dados e privacidade" },
+      { "slug": "tutoriais/perguntas-frequentes", "titulo": "Perguntas frequentes" }
+    ]
+  },
+  {
+    "titulo": "Documentação técnica",
+    "itens": [
+      { "slug": "tecnico/visao-geral", "titulo": "Visão geral e escopo" },
+      { "slug": "tecnico/arquitetura", "titulo": "Arquitetura" },
+      { "slug": "tecnico/estrutura-do-codigo", "titulo": "Estrutura do código" },
+      { "slug": "tecnico/banco-de-dados", "titulo": "Banco de dados e RLS" },
+      { "slug": "tecnico/autenticacao", "titulo": "Autenticação" },
+      { "slug": "tecnico/whatsapp", "titulo": "WhatsApp por link (wa.me)" },
+      { "slug": "tecnico/seguranca-e-lgpd", "titulo": "Segurança e LGPD" },
+      { "slug": "tecnico/testes", "titulo": "Testes" },
+      { "slug": "tecnico/deploy", "titulo": "Deploy: Supabase e Vercel" },
+      { "slug": "tecnico/operacao", "titulo": "Operação e suporte" },
+      { "slug": "tecnico/decisoes", "titulo": "Registro de decisões" },
+      { "slug": "tecnico/roadmap", "titulo": "Fora de agora e gatilhos" }
+    ]
+  }
+]

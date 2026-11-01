@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+/* Letra base grande para profissionais pouco digitais (agente 03). */
+html { font-size: 18px; }
+body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+button:disabled { opacity: .6; }
+
+/* Wiki */
+.wiki h1 { font-size: 1.8rem; font-weight: 700; margin: 0 0 1rem; }
+.wiki h2 { font-size: 1.35rem; font-weight: 700; margin: 1.8rem 0 .6rem; }
+.wiki h3 { font-size: 1.1rem; font-weight: 700; margin: 1.4rem 0 .4rem; }
+.wiki p, .wiki ul, .wiki ol, .wiki table, .wiki pre, .wiki blockquote { margin: 0 0 1rem; }
+.wiki ul { list-style: disc; padding-left: 1.4rem; }
+.wiki ol { list-style: decimal; padding-left: 1.4rem; }
+.wiki li { margin: .25rem 0; }
+.wiki a { color: #047857; text-decoration: underline; }
+.wiki code { background: #f5f5f4; padding: .1rem .3rem; border-radius: .3rem; font-size: .85em; }
+.wiki pre { background: #1c1917; color: #f5f5f4; padding: 1rem; border-radius: .6rem; overflow-x: auto; font-size: .8rem; }
+.wiki pre code { background: none; padding: 0; color: inherit; }
+.wiki table { width: 100%; border-collapse: collapse; font-size: .9rem; display: block; overflow-x: auto; }
+.wiki th, .wiki td { border: 1px solid #e7e5e4; padding: .45rem .6rem; text-align: left; vertical-align: top; }
+.wiki th { background: #f5f5f4; }
+.wiki blockquote { border-left: 4px solid #047857; padding: .4rem 1rem; background: #ecfdf5; }
