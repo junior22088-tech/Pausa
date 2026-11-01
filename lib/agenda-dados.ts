@@ -27,7 +27,7 @@ export type SessaoDoDia = Ocupado & { situacao: string; clienteId: string; durac
 /** Sessões ativas (não canceladas) que começam no dia. */
 export async function sessoesDoDia(supabase: Supa, dia: string): Promise<SessaoDoDia[]> {
   const { data } = await supabase.from('sessoes')
-    .select('id, inicio, ocupado_ate, duracao_min, situacao, cliente_id, clientes(nome), servicos(nome)')
+    .select('id, inicio, ocupado_ate, duracao_min, situacao, cliente_id, clientes(nome), servicos(nome), pacote_itens(nome)')
     .gte('inicio', inicioDoDia(dia).toISOString()).lt('inicio', inicioDoDia(somarDias(dia, 1)).toISOString())
     .neq('situacao', 'cancelada').order('inicio');
   return (data ?? []).map((s: any) => {
@@ -35,7 +35,7 @@ export async function sessoesDoDia(supabase: Supa, dia: string): Promise<SessaoD
     return {
       id: s.id, inicio: ini, fim: Math.min(1440, ini + Math.round((new Date(s.ocupado_ate).getTime() - new Date(s.inicio).getTime()) / 60000)),
       fimAtendimento: ini + s.duracao_min, duracao: s.duracao_min,
-      nome: s.clientes?.nome ?? '', servico: s.servicos?.nome ?? undefined, situacao: s.situacao, clienteId: s.cliente_id,
+      nome: s.clientes?.nome ?? '', servico: s.servicos?.nome ?? s.pacote_itens?.nome ?? undefined, situacao: s.situacao, clienteId: s.cliente_id,
     };
   });
 }

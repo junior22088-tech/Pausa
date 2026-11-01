@@ -90,23 +90,29 @@ export function msgLembrete(p: Prof, cliente: string, inicio: string, prazo: str
   ].join('\n');
 }
 
-export function msgSaldo(p: Prof, cliente: string, saldo: number, total: number, validade: string, correcao = false) {
+type ItemMsg = { nome: string; quantidade: number; duracao_min: number; saldo?: number };
+
+export function msgSaldo(p: Prof, cliente: string, saldo: number, total: number, validade: string, correcao = false, itens: ItemMsg[] = []) {
   return [
     cabecalho(p),
     correcao ? `Olá, ${cliente}! Correção do seu saldo:` : `Olá, ${cliente}! Sessão de hoje registrada.`,
     `*Restam ${saldo} de ${total} sessões* no seu pacote.`,
+    // Pacote com mais de um serviço: o saldo de cada um.
+    ...(itens.length > 1 ? itens.map((i) => `• ${i.nome}: ${i.saldo ?? 0} de ${i.quantidade}`) : []),
     `Válido até ${dataPorExtenso(validade, false)}.`,
   ].join('\n');
 }
 
 export function msgResumoPacote(
-  p: Prof, cliente: string, total: number, valor: number, pago: boolean, validade: string, regra: string,
-  servico?: { nome: string; duracao_min: number } | null,
+  p: Prof, cliente: string, itens: ItemMsg[], valor: number, pago: boolean, validade: string, regra: string, versao = 1,
 ) {
+  const total = itens.reduce((a, i) => a + i.quantidade, 0);
+  const sessoes = (n: number) => `${n} ${n === 1 ? 'sessão' : 'sessões'}`;
   return [
     cabecalho(p),
-    `Olá, ${cliente}! Este é o resumo do seu pacote:`,
-    servico ? `• ${total} sessões de ${servico.nome} (${servico.duracao_min} min)` : `• ${total} sessões`,
+    versao > 1 ? `Olá, ${cliente}! Este é o resumo *atualizado* do seu pacote:` : `Olá, ${cliente}! Este é o resumo do seu pacote:`,
+    ...itens.map((i) => `• ${sessoes(i.quantidade)} de ${i.nome} (${i.duracao_min} min)`),
+    ...(itens.length > 1 ? [`• Total: ${sessoes(total)}`] : []),
     `• Valor: ${reais(valor)} (${pago ? 'pago' : 'a pagar'})`,
     `• Válido até ${dataPorExtenso(validade, false)}`,
     `• ${regra}`,

@@ -1,6 +1,6 @@
 # Banco de dados e RLS
 
-Migrações em `supabase/migrations/`: `schema_inicial`, `licenca_estado` e `agenda_servicos`.
+Migrações em `supabase/migrations/`: `schema_inicial`, `licenca_estado`, `agenda_servicos` e `pacote_itens`.
 
 ## Tabelas
 
@@ -17,7 +17,20 @@ Migrações em `supabase/migrations/`: `schema_inicial`, `licenca_estado` e `age
 | `horarios_semana` | expediente | PK (`profissional_id`, `dia_semana` 0=dom); minutos desde 00:00; almoço opcional |
 | `bloqueios` | folgas | `data_inicio`/`data_fim`, `dia_inteiro` ou `inicio_min`/`fim_min` |
 
-`profissionais.intervalo_min` (padrão 15) é o intervalo entre sessões. `pacotes.servico_id` liga o pacote a um serviço.
+`profissionais.intervalo_min` (padrão 15) é o intervalo entre sessões.
+
+## Pacotes com vários serviços
+
+| Tabela/view | Papel |
+|---|---|
+| `pacote_itens` | itens do pacote: `servico_id` (nulo = item manual), `nome`, `duracao_min`, `preco_unit_centavos` copiados no momento, `quantidade`, `ordem` |
+| `pacote_itens_saldo` | view (`security_invoker`): `usadas` e `saldo` por item |
+| `sessoes.pacote_item_id` | de qual item a sessão desconta; trigger `checar_item_da_sessao` exige que o item seja do mesmo pacote |
+| `pacotes.versao` | sobe a cada edição; o envio do resumo grava a versão e o aceite só vale para a versão enviada |
+
+`pacotes.total_sessoes` = soma das quantidades. Sessões antigas sem item contam no primeiro item. `pacotes.servico_id` ficou só por compatibilidade.
+
+Criar e editar passam pela função `salvar_pacote(p_id, p_cliente_id, p_itens, p_valor_centavos, p_validade, p_regra)` (`security invoker`, tudo ou nada): relê nome/duração/preço do serviço cadastrado (não confia no navegador), bloqueia quantidade abaixo do usado e retirada de item com sessões, sobe a versão e volta para `aguardando_aceite`.
 
 ## Trava de conflito
 

@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { carregarProfissional } from '@/lib/dados';
+import { itensDosPacotes } from '@/lib/pacotes';
 import { dataCurta, dataPorExtenso, hora, linkWhatsApp, reais, telefoneBonito } from '@/lib/format';
 import { anularPagamento } from '@/lib/actions';
 import { TelaFichaCliente, type FichaDados } from '@/components/telas/FichaCliente';
@@ -19,6 +20,7 @@ export default async function ClienteDetalhe({ params, searchParams }: { params:
   ]);
   if (!c) notFound();
   const ativo: any = pacotes?.find((p: any) => ['aguardando_aceite', 'aceito'].includes(p.situacao));
+  const itens = ativo ? await itensDosPacotes(supabase, [ativo.id]) : [];
 
   const dados: FichaDados = {
     cliente: { id: c.id, nome: c.nome, telefone: c.telefone, telefoneBonito: telefoneBonito(c.telefone) },
@@ -26,7 +28,8 @@ export default async function ClienteDetalhe({ params, searchParams }: { params:
     pacote: ativo ? {
       id: ativo.id, total: ativo.total_sessoes, usadas: ativo.sessoes_usadas, saldo: ativo.saldo,
       valor: reais(ativo.valor_centavos), validade: dataPorExtenso(ativo.validade_ate, false),
-      situacao: ativo.situacao, pago: ativo.pago,
+      situacao: ativo.situacao, pago: ativo.pago, versao: ativo.versao,
+      itens: itens.map((i) => ({ nome: i.nome, saldo: i.saldo, quantidade: i.quantidade })),
     } : null,
     proximas: (proximas ?? []).map((s) => ({ id: s.id, dia: new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', weekday: 'short', day: 'numeric', month: 'long' }).format(new Date(s.inicio)).replace('.', ''), hora: hora(s.inicio) })),
     pagamentos: (pagamentos ?? []).map((p) => ({ id: p.id, data: dataCurta(p.recebido_em), valor: reais(p.valor_centavos), forma: FORMA[p.forma] ?? p.forma, anulado: !!p.anulado_em })),

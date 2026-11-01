@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { carregarProfissional } from '@/lib/dados';
+import { itensDosPacotes } from '@/lib/pacotes';
 import { linkWhatsApp, msgSaldo } from '@/lib/format';
 import { registrarWhatsApp } from '@/lib/actions';
 import { WhatsAppButton } from '@/components/WhatsAppButton';
@@ -24,13 +25,21 @@ export default async function SessaoFeita({ params }: { params: Promise<{ id: st
     );
   }
 
-  const { data: p } = await supabase.from('pacotes_saldo').select('saldo, total_sessoes, validade_ate').eq('id', s.pacote_id).single();
-  const texto = msgSaldo(prof, cliente.nome, p!.saldo, p!.total_sessoes, p!.validade_ate);
+  const [{ data: p }, itens] = await Promise.all([
+    supabase.from('pacotes_saldo').select('saldo, total_sessoes, validade_ate').eq('id', s.pacote_id).single(),
+    itensDosPacotes(supabase, [s.pacote_id]),
+  ]);
+  const texto = msgSaldo(prof, cliente.nome, p!.saldo, p!.total_sessoes, p!.validade_ate, false, itens);
   return (
     <div className="space-y-4">
       <Cartao>
         <p className="text-lg">{cliente.nome}</p>
         <p className="text-4xl font-bold">Restam {p!.saldo} de {p!.total_sessoes}</p>
+        {itens.length > 1 && (
+          <ul className="mt-2 text-base text-stone-600">
+            {itens.map((i) => <li key={i.id}>{i.nome}: {i.saldo} de {i.quantidade}</li>)}
+          </ul>
+        )}
       </Cartao>
       <WhatsAppButton className={`${btnPrimario} w-full`} href={linkWhatsApp(cliente.telefone, texto)} registrar={registrarWhatsApp.bind(null, id, 'saldo')}>
         Enviar saldo

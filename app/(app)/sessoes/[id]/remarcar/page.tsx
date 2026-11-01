@@ -13,7 +13,7 @@ export default async function Remarcar({ params, searchParams }: { params: Promi
   const { id } = await params;
   const q = await searchParams;
   const { supabase, user } = await carregarProfissional();
-  const { data: s } = await supabase.from('sessoes').select('id, inicio, situacao, duracao_min, intervalo_min, clientes(nome), servicos(nome)').eq('id', id).maybeSingle();
+  const { data: s } = await supabase.from('sessoes').select('id, inicio, situacao, duracao_min, intervalo_min, clientes(nome), servicos(nome), pacote_itens(nome)').eq('id', id).maybeSingle();
   if (!s) notFound();
   const sessao: any = s;
   const hoje = diaSP();

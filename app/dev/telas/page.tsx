@@ -11,6 +11,8 @@ import { anularPagamento, cancelarSessao, desfazerFeita, registrarWhatsApp, sess
 import { TelaAgenda } from '@/components/telas/Agenda';
 import { TelaSessao } from '@/components/telas/Sessao';
 import { Toast } from '@/components/Toast';
+import { ItensPacote } from '@/components/ItensPacote';
+import { Titulo, btnPrimario } from '@/components/ui';
 
 export const dynamic = 'force-dynamic';
 
@@ -81,6 +83,24 @@ export default async function Galeria({ searchParams }: { searchParams: Promise<
         registrarLembrete={registrarWhatsApp.bind(null, 's2', 'lembrete')} registrarAvisoFolga={registrarWhatsApp.bind(null, 's2', 'aviso_folga')}
       />
     );
+  } else if (tela === 'pacote' || tela === 'pacote-editar') {
+    const editar = tela === 'pacote-editar';
+    const servicos = [
+      { id: 's1', nome: 'Drenagem linfática', duracao_min: 50, preco_centavos: 11000 },
+      { id: 's2', nome: 'Massagem relaxante', duracao_min: 60, preco_centavos: 12000 },
+      { id: 's3', nome: 'Pedras quentes', duracao_min: 90, preco_centavos: 18000 },
+    ];
+    conteudo = (
+      <form className="space-y-6 pb-8">
+        <Titulo voltar="#" voltarRotulo={editar ? 'Resumo' : 'Ana Paula Ribeiro'}>{editar ? 'Editar pacote' : 'Novo pacote'}</Titulo>
+        <ItensPacote servicos={servicos} valorInicial={editar ? 100000 : null} iniciais={editar ? [
+          { id: 'i1', servico_id: 's2', nome: 'Massagem relaxante', duracao_min: 60, quantidade: 6, preco_unit_centavos: 12000, usadas: 2 },
+          { id: 'i2', servico_id: 's1', nome: 'Drenagem linfática', duracao_min: 50, quantidade: 4, preco_unit_centavos: 11000, usadas: 1 },
+          { id: 'i3', servico_id: null, nome: 'Avaliação postural', duracao_min: 30, quantidade: 1, preco_unit_centavos: null, usadas: 0 },
+        ] : []} />
+        <button type="button" className={`${btnPrimario} w-full`}>{editar ? 'Salvar e reenviar resumo' : 'Salvar e preparar resumo'}</button>
+      </form>
+    );
   } else if (tela === 'clientes') {
     conteudo = (
       <TelaClientes clientes={semDados ? [] : [
@@ -99,7 +119,7 @@ export default async function Galeria({ searchParams }: { searchParams: Promise<
         dados={{
           cliente: { id: 'c1', nome: 'Ana Paula Ribeiro', telefone: '5511987654321', telefoneBonito: '(11) 98765-4321' },
           whatsappHref: WA,
-          pacote: semDados ? null : { id: 'k1', total: 10, usadas: 3, saldo: 7, valor: 'R$ 900,00', validade: '30 de janeiro', situacao: 'aceito', pago: true },
+          pacote: semDados ? null : { id: 'k1', total: 10, usadas: 3, saldo: 7, valor: 'R$ 1.000,00', validade: '30 de janeiro', situacao: 'aceito', pago: true, versao: 2, itens: [{ nome: 'Massagem relaxante', saldo: 4, quantidade: 6 }, { nome: 'Drenagem linfática', saldo: 3, quantidade: 4 }] },
           proximas: semDados ? [] : [
             { id: 'x1', dia: 'ter, 3 de novembro', hora: '09:00' },
             { id: 'x2', dia: 'ter, 10 de novembro', hora: '09:00' },

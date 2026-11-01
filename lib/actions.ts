@@ -8,6 +8,7 @@ import { createClient, requireUser } from '@/lib/supabase/server';
 import { exigirLicenca } from '@/lib/licenca';
 import { conflito, hhmm, horariosLivres, minutosSP, paraMin, proximosLivres } from '@/lib/agenda-horarios';
 import { configAgenda, sessoesDoDia } from '@/lib/agenda-dados';
+import { pacoteEmUso, resolverEscolha } from '@/lib/pacotes';
 import { instanteSP, normalizarTelefone, paraCentavos, reais, somarDias, diaSP } from '@/lib/format';
 
 type Supa = Awaited<ReturnType<typeof createClient>>;
@@ -184,49 +185,85 @@ export async function corrigirCliente(fd: FormData) {
 }
 
 // ---------------------------------------------------------------- Pacotes
+/** Itens do formulário (JSON do components/ItensPacote). O banco revalida tudo em salvar_pacote. */
+function lerItens(fd: FormData, voltar: string) {
+  let itens: unknown;
+  try { itens = JSON.parse(texto(fd, 'itens') || '[]'); } catch { itens = null; }
+  if (!Array.isArray(itens)) falhou('Não foi possível ler os itens do pacote.', voltar);
+  if (!itens.length) falhou('Escolha pelo menos um serviço ou adicione um item.', voltar);
+  if (itens.some((i: { servico_id?: string; nome?: string }) => !i.servico_id && !String(i.nome ?? '').trim())) falhou('Dê um nome a cada item manual.', voltar);
+  return itens as { quantidade: number }[];
+}
+
+/** Mensagens do salvar_pacote são escritas para a pessoa; erros técnicos viram um aviso genérico. */
+function erroDoPacote(e: { message?: string; code?: string } | null) {
+  return e?.code === 'P0001' && e.message ? e.message : 'Não foi possível salvar o pacote.';
+}
+
 export async function criarPacote(fd: FormData) {
-  const { supabase, user } = await escritor();
+  const { supabase } = await escritor();
   const cliente_id = texto(fd, 'cliente_id');
   const voltar = `/clientes/${cliente_id}/pacote`;
-  // Número digitado vale mais que o botão: quem digitou 29 quer 29, mesmo sem tocar em "Outro".
-  const totalDigitado = texto(fd, 'total_outro').replace(/\D/g, '');
-  if (texto(fd, 'total_sessoes') === 'outro' && !totalDigitado) falhou('Digite quantas sessões tem o pacote.', voltar);
-  const total = Number(totalDigitado || texto(fd, 'total_sessoes'));
+  const itens = lerItens(fd, voltar);
+  const total = itens.reduce((a, i) => a + Number(i.quantidade || 0), 0);
   const valor = paraCentavos(texto(fd, 'valor'));
   const diasDigitados = texto(fd, 'validade_outro').replace(/\D/g, '');
   if (texto(fd, 'validade_dias') === 'outro' && !diasDigitados) falhou('Digite quantos dias vale o pacote.', voltar);
   const diasValidade = Number(diasDigitados || texto(fd, 'validade_dias'));
-  if (!Number.isInteger(total) || total < 1 || total > 100) falhou('Número de sessões entre 1 e 100.', voltar);
+  if (total < 1 || total > 100) falhou('O pacote precisa ter de 1 a 100 sessões no total.', voltar);
   if (!Number.isFinite(valor) || valor < 0) falhou('Confira o valor do pacote.', voltar);
   if (!Number.isInteger(diasValidade) || diasValidade < 1 || diasValidade > 730) falhou('Validade entre 1 e 730 dias.', voltar);
 
-  const servico_id = texto(fd, 'servico_id') || null;
-  const { data: prof } = await supabase.from('profissionais').select('regra_cancelamento').eq('id', user.id).single();
-  const { data, error } = await supabase.from('pacotes').insert({
-    cliente_id,
-    servico_id,
-    total_sessoes: total,
-    valor_centavos: valor,
-    validade_ate: somarDias(diaSP(), diasValidade),
-    regra_cancelamento: prof?.regra_cancelamento ?? '',
-  }).select('id').single();
-  if (error || !data) falhou('Não foi possível criar o pacote.', voltar);
+  const { data: id, error } = await supabase.rpc('salvar_pacote', {
+    p_id: null, p_cliente_id: cliente_id, p_itens: itens, p_valor_centavos: valor,
+    p_validade: somarDias(diaSP(), diasValidade), p_regra: texto(fd, 'regra'),
+  });
+  if (error || !id) falhou(erroDoPacote(error), voltar);
   await evento(supabase, {
-    cliente_id, entidade: 'pacote', entidade_id: data.id, tipo: 'criou',
-    descricao: `Pacote criado: ${total} sessões, ${reais(valor)}, ${diasValidade} dias`,
+    cliente_id, entidade: 'pacote', entidade_id: id, tipo: 'criou',
+    descricao: `Pacote criado: ${total} sessões, ${reais(valor)}, ${diasValidade} dias`, depois: { itens },
   });
   revalidatePath(`/clientes/${cliente_id}`);
-  redirect(feito(`/pacotes/${data.id}/resumo`, `Pacote de ${total} sessões criado. Agora envie o resumo.`));
+  redirect(feito(`/pacotes/${id}/resumo`, `Pacote de ${total} sessões criado. Agora envie o resumo.`));
+}
+
+export async function editarPacote(fd: FormData) {
+  const { supabase } = await escritor();
+  const id = texto(fd, 'id');
+  const voltar = `/pacotes/${id}/editar`;
+  const itens = lerItens(fd, voltar);
+  const valor = paraCentavos(texto(fd, 'valor'));
+  const validade = texto(fd, 'validade');
+  if (!Number.isFinite(valor) || valor < 0) falhou('Confira o valor do pacote.', voltar);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(validade)) falhou('Confira a data de validade.', voltar);
+
+  const { data: antes } = await supabase.from('pacotes').select('cliente_id, total_sessoes, valor_centavos, validade_ate, regra_cancelamento, versao, situacao').eq('id', id).single();
+  if (!antes) falhou('Pacote não encontrado.', '/clientes');
+  const { data: itensAntes } = await supabase.from('pacote_itens').select('nome, quantidade, duracao_min').eq('pacote_id', id).order('ordem');
+
+  const { error } = await supabase.rpc('salvar_pacote', {
+    p_id: id, p_cliente_id: antes.cliente_id, p_itens: itens, p_valor_centavos: valor, p_validade: validade, p_regra: texto(fd, 'regra'),
+  });
+  if (error) falhou(erroDoPacote(error), voltar);
+  const { data: depois } = await supabase.from('pacotes').select('total_sessoes, valor_centavos, validade_ate, regra_cancelamento, versao').eq('id', id).single();
+  await evento(supabase, {
+    cliente_id: antes.cliente_id, entidade: 'pacote', entidade_id: id, tipo: 'corrigiu',
+    descricao: `Pacote editado (versão ${depois?.versao ?? antes.versao + 1}): ${depois?.total_sessoes ?? '?'} sessões, ${reais(depois?.valor_centavos ?? valor)}${antes.situacao === 'aceito' ? '. Aguardando novo aceite' : ''}`,
+    antes: { ...antes, itens: itensAntes }, depois: { ...depois, itens },
+  });
+  revalidatePath('/', 'layout');
+  redirect(feito(`/pacotes/${id}/resumo`, 'Pacote atualizado. Reenvie o resumo para a cliente aceitar a nova versão.'));
 }
 
 /** Chamado antes de abrir o WhatsApp com o resumo: guarda a cópia exata do texto. */
 export async function registrarEnvioResumo(pacoteId: string, textoEnviado: string) {
   const { supabase } = await requireUser();
-  const { data: p } = await supabase.from('pacotes').select('cliente_id').eq('id', pacoteId).single();
+  const { data: p } = await supabase.from('pacotes').select('cliente_id, versao').eq('id', pacoteId).single();
   if (!p) return;
   await evento(supabase, {
     cliente_id: p.cliente_id, entidade: 'pacote', entidade_id: pacoteId, tipo: 'abriu_whatsapp',
-    descricao: 'Resumo do pacote aberto no WhatsApp', depois: { texto: textoEnviado },
+    descricao: p.versao > 1 ? `Resumo do pacote (versão ${p.versao}) aberto no WhatsApp` : 'Resumo do pacote aberto no WhatsApp',
+    depois: { texto: textoEnviado, versao: p.versao },
   });
   revalidatePath('/');
 }
@@ -235,18 +272,20 @@ export async function marcarAceite(fd: FormData) {
   const { supabase } = await escritor();
   const pacoteId = texto(fd, 'pacote_id');
   const resposta = texto(fd, 'resposta') || null;
-  const { data: p } = await supabase.from('pacotes').select('cliente_id, situacao').eq('id', pacoteId).single();
+  const { data: p } = await supabase.from('pacotes').select('cliente_id, situacao, versao').eq('id', pacoteId).single();
   if (!p) falhou('Pacote não encontrado.', '/');
 
   const { data: ultimo } = await supabase.from('eventos').select('depois')
     .eq('entidade_id', pacoteId).eq('tipo', 'abriu_whatsapp').order('criado_em', { ascending: false }).limit(1).maybeSingle();
-  const textoEnviado = (ultimo?.depois as { texto?: string } | null)?.texto;
+  const enviado = ultimo?.depois as { texto?: string; versao?: number } | null;
+  const textoEnviado = enviado?.texto;
   if (!textoEnviado) falhou('Envie o resumo pelo WhatsApp antes de marcar o aceite.', `/pacotes/${pacoteId}/resumo`);
+  // Pacote editado depois do último envio: a cliente ainda não viu a versão atual.
+  if ((enviado?.versao ?? 1) !== p.versao) falhou('O pacote mudou depois do último envio. Envie o resumo atualizado antes de marcar o aceite.', `/pacotes/${pacoteId}/resumo`);
 
-  const { count } = await supabase.from('aceites').select('id', { count: 'exact', head: true }).eq('pacote_id', pacoteId);
   const hash = createHash('sha256').update(textoEnviado).digest('hex');
   const { error } = await supabase.from('aceites').insert({
-    pacote_id: pacoteId, texto_enviado: textoEnviado, hash_sha256: hash, versao: (count ?? 0) + 1, resposta_literal: resposta,
+    pacote_id: pacoteId, texto_enviado: textoEnviado, hash_sha256: hash, versao: p.versao, resposta_literal: resposta,
   });
   if (error) falhou('Não foi possível registrar o aceite.', `/pacotes/${pacoteId}/resumo`);
   await supabase.from('pacotes').update({ situacao: 'aceito' }).eq('id', pacoteId);
@@ -271,13 +310,6 @@ export async function marcarDesistencia(fd: FormData) {
 }
 
 // ---------------------------------------------------------------- Sessões
-async function pacoteAtivo(supabase: Supa, clienteId: string) {
-  const { data } = await supabase.from('pacotes_saldo').select('id, saldo, validade_ate, situacao, servico_id')
-    .eq('cliente_id', clienteId).in('situacao', ['aguardando_aceite', 'aceito'])
-    .gte('validade_ate', diaSP()).gt('saldo', 0).order('criado_em', { ascending: true }).limit(1).maybeSingle();
-  return data;
-}
-
 /**
  * Confere se `dia hora` está livre para `duracao` (+ intervalo). Se não estiver, volta com o aviso
  * de conflito e os próximos horários livres. `ignorarId` = a própria sessão, ao remarcar.
@@ -306,10 +338,10 @@ const ehConflitoNoBanco = (e: { code?: string } | null) => e?.code === '23P01';
 export async function marcarSessao(fd: FormData) {
   const { supabase, user } = await escritor();
   const cliente_id = texto(fd, 'cliente_id');
-  const servico_id = texto(fd, 'servico_id') || null;
+  const valorEscolha = texto(fd, 'escolha');
   const dia = texto(fd, 'dia');
   const h = texto(fd, 'hora');
-  const voltar = `/agenda/nova?cliente=${cliente_id}${servico_id ? `&servico=${servico_id}` : ''}&dia=${dia}`;
+  const voltar = `/agenda/nova?cliente=${cliente_id}${valorEscolha ? `&servico=${encodeURIComponent(valorEscolha)}` : ''}&dia=${dia}`;
   if (!cliente_id) falhou('Escolha o cliente.', voltar);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dia) || !/^\d{2}:\d{2}$/.test(h)) falhou('Escolha o dia e um dos horários livres.', voltar);
 
@@ -319,20 +351,21 @@ export async function marcarSessao(fd: FormData) {
   if (repetida) redirect(`/agenda?dia=${dia}`);
 
   const cfg = await configAgenda(supabase, user.id);
-  const servico = cfg.servicos.find((x) => x.id === servico_id) ?? null;
-  const duracao = servico?.duracao_min ?? 60;
+  const pacote = await pacoteEmUso(supabase, cliente_id);
+  const escolha = resolverEscolha(valorEscolha, pacote, cfg.servicos.filter((x) => x.ativo));
+  if (valorEscolha && !escolha) falhou('Esse serviço não está mais disponível (ou o pacote acabou). Escolha de novo.', `/agenda/nova?cliente=${cliente_id}&dia=${dia}&trocar=1`);
+  const duracao = escolha?.duracao ?? 60;
   await exigirHorarioLivre(supabase, user.id, dia, h, duracao, cfg.intervalo, voltar);
 
-  const pacote = await pacoteAtivo(supabase, cliente_id);
   const valorDigitado = texto(fd, 'valor') ? paraCentavos(texto(fd, 'valor')) : null;
-  const valorAvulso = pacote ? null : (valorDigitado ?? servico?.preco_centavos ?? null);
+  const valorAvulso = escolha?.pacoteId ? null : (valorDigitado ?? escolha?.precoAvulso ?? null);
   const { data, error } = await supabase.from('sessoes').insert({
-    cliente_id, servico_id: servico?.id ?? null, inicio: instanteSP(dia, h), duracao_min: duracao, intervalo_min: cfg.intervalo,
-    pacote_id: pacote?.id ?? null, valor_avulso_centavos: valorAvulso,
+    cliente_id, servico_id: escolha?.servicoId ?? null, inicio: instanteSP(dia, h), duracao_min: duracao, intervalo_min: cfg.intervalo,
+    pacote_id: escolha?.pacoteId ?? null, pacote_item_id: escolha?.itemId ?? null, valor_avulso_centavos: valorAvulso,
   }).select('id').single();
   if (ehConflitoNoBanco(error)) falhou('Conflito: esse horário acabou de ser ocupado. Escolha outro.', voltar);
   if (error || !data) falhou('Não foi possível marcar a sessão.', voltar);
-  const rotulo = `${servico ? `${servico.nome}, ` : ''}${ddmm(dia)} às ${h}${pacote ? ' (pacote)' : ' (avulsa)'}`;
+  const rotulo = `${escolha ? `${escolha.nome}, ` : ''}${ddmm(dia)} às ${h}${escolha?.pacoteId ? ' (pacote)' : ' (avulsa)'}`;
   await evento(supabase, { cliente_id, entidade: 'sessao', entidade_id: data.id, tipo: 'criou', descricao: `Sessão marcada: ${rotulo}` });
   revalidatePath('/', 'layout');
   redirect(feito(`/agenda?dia=${dia}`, `Sessão marcada: ${rotulo}.`));
@@ -374,19 +407,24 @@ export async function cancelarSessao(fd: FormData) {
 export async function sessaoFeita(fd: FormData) {
   const { supabase } = await escritor();
   const id = texto(fd, 'id');
-  const { data: s } = await supabase.from('sessoes').select('cliente_id, pacote_id, situacao, inicio').eq('id', id).single();
+  const { data: s } = await supabase.from('sessoes').select('cliente_id, pacote_id, pacote_item_id, situacao, inicio').eq('id', id).single();
   if (!s) falhou('Sessão não encontrada.', '/');
   // Segundo toque: a sessão já está feita; não recalcula (evitaria virar avulsa na última do pacote).
   if (s.situacao !== 'marcada') redirect(`/sessoes/${id}/feita`);
   let pacoteId = s.pacote_id;
+  let itemId = s.pacote_item_id;
   if (pacoteId) {
-    const { data: p } = await supabase.from('pacotes_saldo').select('saldo').eq('id', pacoteId).single();
+    // Saldo do serviço no pacote (ou do pacote todo, em sessão antiga sem item).
+    const { data: p } = itemId
+      ? await supabase.from('pacote_itens_saldo').select('saldo').eq('id', itemId).single()
+      : await supabase.from('pacotes_saldo').select('saldo').eq('id', pacoteId).single();
     if (!p || p.saldo <= 0) {
-      // Pacote esgotado: o saldo nunca fica negativo; vira avulsa.
+      // Esgotado: o saldo nunca fica negativo; vira avulsa.
       pacoteId = null;
+      itemId = null;
     }
   }
-  await supabase.from('sessoes').update({ situacao: 'feita', pacote_id: pacoteId, desconta: !!pacoteId }).eq('id', id);
+  await supabase.from('sessoes').update({ situacao: 'feita', pacote_id: pacoteId, pacote_item_id: itemId, desconta: !!pacoteId }).eq('id', id);
   await evento(supabase, { cliente_id: s.cliente_id, entidade: 'sessao', entidade_id: id, tipo: 'feita', descricao: pacoteId ? 'Sessão feita (descontada do pacote)' : 'Sessão avulsa feita' });
   revalidatePath('/', 'layout');
   redirect(feito(`/sessoes/${id}/feita`, 'Sessão registrada como feita.'));

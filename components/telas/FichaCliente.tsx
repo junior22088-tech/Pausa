@@ -8,7 +8,8 @@ import { Enviar } from '@/components/Enviar';
 
 export type PacoteFicha = {
   id: string; total: number; usadas: number; saldo: number; valor: string; validade: string;
-  situacao: 'aguardando_aceite' | 'aceito'; pago: boolean;
+  situacao: 'aguardando_aceite' | 'aceito'; pago: boolean; versao?: number;
+  itens?: { nome: string; saldo: number; quantidade: number }[];
 };
 export type FichaDados = {
   cliente: { id: string; nome: string; telefone: string; telefoneBonito: string };
@@ -50,7 +51,7 @@ export function TelaFichaCliente({
       {ok === 'aceite' && <Aviso ok={<>Aceite registrado. Próximo passo: <Link href={`/agenda/nova?cliente=${c.id}`} className="font-semibold underline">marcar a primeira sessão</Link>.</>} />}
 
       {/* Pacote */}
-      <Secao titulo="Pacote">
+      <Secao titulo="Pacote" acao={p ? <Link href={`/pacotes/${p.id}/editar`} className={btnTexto}><Pencil className="size-4" aria-hidden />Editar</Link> : undefined}>
         {p ? (
           <Cartao>
             <div className="flex flex-wrap gap-1.5">
@@ -60,7 +61,18 @@ export function TelaFichaCliente({
             <p className="mt-2 text-[1.6rem] font-bold leading-tight">
               {p.saldo} <span className="text-base font-semibold text-stone-500">{p.saldo === 1 ? 'sessão restante' : 'sessões restantes'}</span>
             </p>
-            <p className="text-[0.85rem] text-stone-500">Pacote de {p.total} · {p.valor}</p>
+            <p className="text-[0.85rem] text-stone-500">Pacote de {p.total} · {p.valor}{p.versao && p.versao > 1 ? ` · versão ${p.versao}` : ''}</p>
+            {p.itens && p.itens.length > 1 && (
+              <ul className="mt-2 space-y-1">
+                {p.itens.map((i) => (
+                  <li key={i.nome} className="flex items-center justify-between text-[0.9rem]">
+                    <span className="truncate">{i.nome}</span>
+                    <span className="shrink-0 font-semibold tabular-nums text-stone-700">{i.saldo}<span className="font-normal text-stone-500"> de {i.quantidade}</span></span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {p.itens?.length === 1 && <p className="text-[0.85rem] text-stone-500">{p.itens[0].nome}</p>}
             <div className="mt-3"><Progresso usadas={p.usadas} total={p.total} /></div>
             <p className="mt-1.5 text-[0.8rem] text-stone-500">{p.usadas} de {p.total} usadas · vale até {p.validade}</p>
             <div className="mt-4 flex gap-2">
