@@ -4,6 +4,7 @@ import { diaSP, inicioDoDia, somarDias, hora, linkWhatsApp, msgLembrete, reais }
 import { registrarWhatsApp, sessaoFeita } from '@/lib/actions';
 import { WhatsAppButton } from '@/components/WhatsAppButton';
 import { Aviso, Cartao, btnPrimario, btnSecundario } from '@/components/ui';
+import { Enviar } from '@/components/Enviar';
 
 export default async function Hoje({ searchParams }: { searchParams: Promise<{ erro?: string }> }) {
   const { erro } = await searchParams;
@@ -75,7 +76,7 @@ export default async function Hoje({ searchParams }: { searchParams: Promise<{ e
               <div className="mt-3 grid grid-cols-2 gap-3">
                 <form action={sessaoFeita}>
                   <input type="hidden" name="id" value={s.id} />
-                  <button className={`${btnPrimario} w-full`}>Feita</button>
+                  <Enviar className={`${btnPrimario} w-full`}>Feita</Enviar>
                 </form>
                 <WhatsAppButton
                   className={`${btnSecundario} w-full`}

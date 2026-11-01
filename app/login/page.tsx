@@ -1,5 +1,6 @@
 import { criarConta, entrar, entrarComCodigo, entrarComSenha } from '@/lib/actions';
 import { Aviso, btnPrimario, btnSecundario, campo, rotulo } from '@/components/ui';
+import { Enviar } from '@/components/Enviar';
 
 type Busca = { enviado?: string; erro?: string; email?: string; modo?: string; confirmar?: string };
 
@@ -27,7 +28,7 @@ export default async function Login({ searchParams }: { searchParams: Promise<Bu
             <span className={rotulo}>Código do e-mail</span>
             <input name="codigo" inputMode="numeric" autoComplete="one-time-code" maxLength={8} required className={`${campo} tracking-widest`} placeholder="123456" />
           </label>
-          <button className={`${btnPrimario} w-full`}>Entrar com o código</button>
+          <Enviar className={`${btnPrimario} w-full`} textoEspera="Entrando…">Entrar com o código</Enviar>
           <a href="/login" className={`${btnSecundario} w-full`}>Voltar</a>
         </form>
       ) : modo === 'link' ? (
@@ -36,7 +37,7 @@ export default async function Login({ searchParams }: { searchParams: Promise<Bu
             <span className={rotulo}>Seu e-mail</span>
             <input type="email" name="email" autoComplete="email" required className={campo} placeholder="voce@email.com" />
           </label>
-          <button className={`${btnPrimario} w-full`}>Receber link de acesso</button>
+          <Enviar className={`${btnPrimario} w-full`} textoEspera="Enviando…">Receber link de acesso</Enviar>
           <a href="/login" className={`${btnSecundario} w-full`}>Entrar com senha</a>
         </form>
       ) : (
@@ -49,8 +50,8 @@ export default async function Login({ searchParams }: { searchParams: Promise<Bu
             <span className={rotulo}>Senha</span>
             <input type="password" name="senha" autoComplete="current-password" required minLength={6} className={campo} />
           </label>
-          <button className={`${btnPrimario} w-full`}>Entrar</button>
-          <button formAction={criarConta} className={`${btnSecundario} w-full`}>Criar conta (primeira vez)</button>
+          <Enviar className={`${btnPrimario} w-full`} textoEspera="Entrando…">Entrar</Enviar>
+          <Enviar formAction={criarConta} className={`${btnSecundario} w-full`} textoEspera="Criando…">Criar conta (primeira vez)</Enviar>
           <a href="/login?modo=link" className="block py-2 text-center text-base text-stone-600 underline">Esqueci a senha / entrar pelo link do e-mail</a>
         </form>
       )}

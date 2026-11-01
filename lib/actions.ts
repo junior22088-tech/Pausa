@@ -150,7 +150,7 @@ export async function criarCliente(fd: FormData) {
   if (error || !data) falhou('Não foi possível cadastrar. Tente de novo.', '/clientes/novo');
   await evento(supabase, { cliente_id: data.id, entidade: 'cliente', entidade_id: data.id, tipo: 'criou', descricao: `Cliente cadastrado: ${nome}` });
   revalidatePath('/clientes');
-  redirect(`/clientes/${data.id}`);
+  redirect(`/clientes/${data.id}?ok=novo`);
 }
 
 export async function corrigirCliente(fd: FormData) {
@@ -238,7 +238,7 @@ export async function marcarAceite(fd: FormData) {
     depois: { hash },
   });
   revalidatePath('/', 'layout');
-  redirect(`/clientes/${p.cliente_id}`);
+  redirect(`/clientes/${p.cliente_id}?ok=aceite`);
 }
 
 export async function marcarDesistencia(fd: FormData) {
@@ -268,6 +268,10 @@ export async function marcarSessao(fd: FormData) {
   const voltar = `/agenda/nova?dia=${dia}`;
   if (!cliente_id) falhou('Escolha o cliente.', voltar);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dia) || !/^\d{2}:\d{2}$/.test(h)) falhou('Escolha dia e horário.', voltar);
+  // Toque duplo ou envio repetido: não cria a mesma sessão duas vezes.
+  const { data: repetida } = await supabase.from('sessoes').select('id')
+    .eq('cliente_id', cliente_id).eq('inicio', instanteSP(dia, h)).eq('situacao', 'marcada').limit(1).maybeSingle();
+  if (repetida) redirect(`/agenda?dia=${dia}`);
   const pacote = await pacoteAtivo(supabase, cliente_id);
   const valorAvulso = texto(fd, 'valor') ? paraCentavos(texto(fd, 'valor')) : null;
   const { data, error } = await supabase.from('sessoes').insert({
@@ -299,8 +303,9 @@ export async function cancelarSessao(fd: FormData) {
   const { supabase } = await requireUser();
   const id = texto(fd, 'id');
   const desconta = texto(fd, 'desconta') === 'sim';
-  const { data: s } = await supabase.from('sessoes').select('cliente_id, pacote_id').eq('id', id).single();
+  const { data: s } = await supabase.from('sessoes').select('cliente_id, pacote_id, situacao').eq('id', id).single();
   if (!s) falhou('Sessão não encontrada.', '/agenda');
+  if (s.situacao !== 'marcada') redirect(`/clientes/${s.cliente_id}`); // já cancelada (toque duplo)
   // Cancelada com desconto entra no saldo (ver view pacotes_saldo).
   await supabase.from('sessoes').update({ situacao: 'cancelada', desconta: desconta && !!s.pacote_id }).eq('id', id);
   await evento(supabase, { cliente_id: s.cliente_id, entidade: 'sessao', entidade_id: id, tipo: 'cancelou', descricao: desconta && s.pacote_id ? 'Sessão cancelada e descontada do pacote' : 'Sessão cancelada sem desconto' });
@@ -313,6 +318,8 @@ export async function sessaoFeita(fd: FormData) {
   const id = texto(fd, 'id');
   const { data: s } = await supabase.from('sessoes').select('cliente_id, pacote_id, situacao').eq('id', id).single();
   if (!s) falhou('Sessão não encontrada.', '/');
+  // Segundo toque: a sessão já está feita; não recalcula (evitaria virar avulsa na última do pacote).
+  if (s.situacao !== 'marcada') redirect(`/sessoes/${id}/feita`);
   let pacoteId = s.pacote_id;
   if (pacoteId) {
     const { data: p } = await supabase.from('pacotes_saldo').select('saldo').eq('id', pacoteId).single();
@@ -371,6 +378,14 @@ export async function registrarPagamento(fd: FormData) {
     cliente_id = data?.cliente_id ?? null;
   }
   if (!cliente_id) falhou('Pagamento sem pacote ou sessão.', voltar);
+
+  // Toque duplo: se o mesmo pagamento acabou de ser registrado, não registra de novo.
+  const doisMinutos = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+  let repetido = supabase.from('pagamentos').select('id').is('anulado_em', null)
+    .eq('valor_centavos', valor).eq('forma', forma).gte('recebido_em', doisMinutos);
+  repetido = pacote_id ? repetido.eq('pacote_id', pacote_id) : repetido.eq('sessao_id', sessao_id!);
+  const { data: jaTem } = await repetido.limit(1).maybeSingle();
+  if (jaTem) redirect(voltar);
 
   const { data: pg, error } = await supabase.from('pagamentos').insert({ cliente_id, pacote_id, sessao_id, valor_centavos: valor, forma }).select('id').single();
   if (error || !pg) falhou('Não foi possível registrar o pagamento.', voltar);

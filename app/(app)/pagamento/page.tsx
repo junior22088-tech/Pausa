@@ -2,6 +2,7 @@ import { carregarProfissional } from '@/lib/dados';
 import { reais } from '@/lib/format';
 import { registrarPagamento } from '@/lib/actions';
 import { Aviso, Titulo, btnPrimario, campo, rotulo } from '@/components/ui';
+import { Enviar } from '@/components/Enviar';
 
 export default async function Pagamento({ searchParams }: { searchParams: Promise<{ pacote?: string; sessao?: string; erro?: string }> }) {
   const { pacote, sessao, erro } = await searchParams;
@@ -32,7 +33,7 @@ export default async function Pagamento({ searchParams }: { searchParams: Promis
         <p className={rotulo}>Como recebeu?</p>
         <div className="grid grid-cols-3 gap-2">
           {[['pix', 'Pix'], ['cartao', 'Cartão'], ['dinheiro', 'Dinheiro']].map(([v, r]) => (
-            <button key={v} name="forma" value={v} className={btnPrimario}>{r}</button>
+            <Enviar key={v} name="forma" value={v} className={btnPrimario}>{r}</Enviar>
           ))}
         </div>
       </form>

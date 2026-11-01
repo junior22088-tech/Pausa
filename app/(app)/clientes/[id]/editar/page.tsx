@@ -3,6 +3,7 @@ import { carregarProfissional } from '@/lib/dados';
 import { telefoneBonito } from '@/lib/format';
 import { corrigirCliente } from '@/lib/actions';
 import { Aviso, Titulo, btnPrimario, campo, rotulo } from '@/components/ui';
+import { Enviar } from '@/components/Enviar';
 
 export default async function EditarCliente({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ erro?: string }> }) {
   const { id } = await params;
@@ -17,7 +18,7 @@ export default async function EditarCliente({ params, searchParams }: { params: 
       <input type="hidden" name="id" value={c.id} />
       <label className="block"><span className={rotulo}>Nome</span><input name="nome" defaultValue={c.nome} required className={campo} /></label>
       <label className="block"><span className={rotulo}>WhatsApp com DDD</span><input name="telefone" defaultValue={telefoneBonito(c.telefone)} required inputMode="tel" className={campo} /></label>
-      <button className={`${btnPrimario} w-full`}>Salvar correção</button>
+      <Enviar className={`${btnPrimario} w-full`}>Salvar correção</Enviar>
     </form>
   );
 }

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { LimparAviso } from './LimparAviso';
 
 export const btn = 'inline-flex min-h-12 items-center justify-center rounded-xl px-4 text-lg font-semibold active:scale-[.98]';
 export const btnPrimario = `${btn} bg-emerald-700 text-white`;
@@ -16,15 +17,29 @@ export function Titulo({ children, voltar }: { children: React.ReactNode; voltar
   );
 }
 
-export function Aviso({ erro, ok }: { erro?: string; ok?: string }) {
+export function Aviso({ erro, ok }: { erro?: string; ok?: React.ReactNode }) {
   if (!erro && !ok) return null;
   return (
-    <p role="status" className={`mb-4 rounded-xl p-3 text-lg ${erro ? 'bg-red-50 text-red-800' : 'bg-emerald-50 text-emerald-900'}`}>
+    <div role={erro ? 'alert' : 'status'} className={`mb-4 rounded-xl p-3 text-lg ${erro ? 'bg-red-50 text-red-800' : 'bg-emerald-50 text-emerald-900'}`}>
       {erro ?? ok}
-    </p>
+      <LimparAviso />
+    </div>
   );
 }
 
 export function Cartao({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return <div className={`rounded-2xl border border-stone-200 bg-white p-4 shadow-sm ${className}`}>{children}</div>;
+}
+
+/** Ação sem volta: o primeiro toque só abre a confirmação. Sem JavaScript e sem janela do navegador. */
+export function Confirmar({ rotulo, pergunta, children, className = btnPerigo }: { rotulo: string; pergunta: string; children: React.ReactNode; className?: string }) {
+  return (
+    <details className="group">
+      <summary className={`${className} w-full cursor-pointer list-none group-open:mb-2`}>{rotulo}</summary>
+      <div className="rounded-xl border-2 border-red-200 bg-red-50 p-3">
+        <p className="mb-3 text-lg font-semibold text-red-900">{pergunta}</p>
+        {children}
+      </div>
+    </details>
+  );
 }

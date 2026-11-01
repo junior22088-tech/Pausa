@@ -3,7 +3,8 @@ import { carregarProfissional } from '@/lib/dados';
 import { linkWhatsApp, msgResumoPacote } from '@/lib/format';
 import { marcarAceite, marcarDesistencia, registrarEnvioResumo } from '@/lib/actions';
 import { WhatsAppButton } from '@/components/WhatsAppButton';
-import { Aviso, Cartao, Titulo, btnPerigo, btnPrimario, btnSecundario, campo, rotulo } from '@/components/ui';
+import { Aviso, Cartao, Titulo, btnPerigo, btnPrimario, btnSecundario, campo, rotulo, Confirmar } from '@/components/ui';
+import { Enviar } from '@/components/Enviar';
 
 export default async function ResumoPacote({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ erro?: string }> }) {
   const { id } = await params;
@@ -35,12 +36,16 @@ export default async function ResumoPacote({ params, searchParams }: { params: P
               <span className={rotulo}>O que ele escreveu (opcional)</span>
               <input name="resposta" placeholder='Ex.: "ACEITO", "ok", 👍' className={campo} />
             </label>
-            <button className={`${btnPrimario} w-full`}>Aceitou</button>
+            <Enviar className={`${btnPrimario} w-full`}>Aceitou</Enviar>
           </form>
-          <form action={marcarDesistencia} className="mt-3">
-            <input type="hidden" name="pacote_id" value={id} />
-            <button className={`${btnPerigo} w-full`}>Desistiu</button>
-          </form>
+          <div className="mt-3">
+            <Confirmar rotulo="Desistiu…" pergunta="Marcar que o cliente desistiu deste pacote?">
+              <form action={marcarDesistencia}>
+                <input type="hidden" name="pacote_id" value={id} />
+                <Enviar className={`${btnPerigo} w-full`}>Sim, desistiu</Enviar>
+              </form>
+            </Confirmar>
+          </div>
           <p className="mt-3 text-base text-stone-500">"Tem dúvida"? Converse no WhatsApp; o pacote continua aguardando aqui.</p>
         </Cartao>
       )}

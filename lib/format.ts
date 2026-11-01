@@ -7,7 +7,15 @@ export function reais(centavos: number) {
 }
 
 export function paraCentavos(valor: string) {
-  const limpo = valor.replace(/[^\d,.-]/g, '').replace(/\./g, '').replace(',', '.');
+  // Aceita "900", "900,00", "900.00", "1.200", "1.200,50", "R$ 1 200,00".
+  let limpo = valor.replace(/[^\d,.]/g, '');
+  if (limpo.includes(',')) {
+    limpo = limpo.replace(/\./g, '').replace(',', '.');           // vírgula é decimal; ponto é milhar
+  } else if (/\.\d{1,2}$/.test(limpo) && (limpo.match(/\./g) ?? []).length === 1) {
+    // "900.00" ou "99.9": ponto como decimal
+  } else {
+    limpo = limpo.replace(/\./g, '');                              // "1.200" → 1200
+  }
   const n = Math.round(parseFloat(limpo) * 100);
   return Number.isFinite(n) ? n : NaN;
 }

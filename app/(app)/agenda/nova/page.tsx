@@ -3,6 +3,7 @@ import { carregarProfissional } from '@/lib/dados';
 import { diaSP } from '@/lib/format';
 import { marcarSessao } from '@/lib/actions';
 import { Aviso, Titulo, btnPrimario, campo, rotulo } from '@/components/ui';
+import { Enviar } from '@/components/Enviar';
 
 export default async function NovaSessao({ searchParams }: { searchParams: Promise<{ dia?: string; cliente?: string; erro?: string }> }) {
   const { dia, cliente, erro } = await searchParams;
@@ -45,7 +46,7 @@ export default async function NovaSessao({ searchParams }: { searchParams: Promi
         <input name="valor" inputMode="decimal" placeholder="R$ 120,00" className={campo} />
         <span className="mt-1 block text-base text-stone-500">Se o cliente tem pacote ativo, a sessão entra no pacote.</span>
       </label>
-      <button className={`${btnPrimario} w-full`}>Marcar</button>
+      <Enviar className={`${btnPrimario} w-full`}>Marcar</Enviar>
     </form>
   );
 }

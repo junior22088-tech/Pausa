@@ -2,6 +2,7 @@ import { carregarProfissional } from '@/lib/dados';
 import { linkWhatsApp } from '@/lib/format';
 import { definirSenha, salvarAjustes, sair } from '@/lib/actions';
 import { Aviso, Cartao, Titulo, btnPerigo, btnPrimario, btnSecundario, campo, rotulo } from '@/components/ui';
+import { Enviar } from '@/components/Enviar';
 
 export default async function Ajustes({ searchParams }: { searchParams: Promise<{ erro?: string; salvo?: string; senha?: string }> }) {
   const { erro, salvo, senha } = await searchParams;
@@ -18,7 +19,7 @@ export default async function Ajustes({ searchParams }: { searchParams: Promise<
         <label className="block"><span className={rotulo}>Especialidade no cabeçalho (opcional)</span><input name="especialidade" defaultValue={p?.especialidade ?? ''} placeholder="Ex.: massoterapia" className={campo} /></label>
         <label className="block"><span className={rotulo}>Endereço no lembrete (opcional)</span><input name="endereco" defaultValue={p?.endereco ?? ''} className={campo} /></label>
         <label className="block"><span className={rotulo}>Regra de cancelamento dos pacotes</span><textarea name="regra_cancelamento" defaultValue={p?.regra_cancelamento} rows={4} required className={`${campo} py-2`} /></label>
-        <button className={`${btnPrimario} w-full`}>Salvar</button>
+        <Enviar className={`${btnPrimario} w-full`}>Salvar</Enviar>
       </form>
 
       <Cartao>
@@ -33,12 +34,12 @@ export default async function Ajustes({ searchParams }: { searchParams: Promise<
         <h2 className="mb-2 text-lg font-bold">Senha</h2>
         <form action={definirSenha} className="space-y-3">
           <label className="block"><span className={rotulo}>Nova senha (mínimo 8 caracteres)</span><input type="password" name="senha" autoComplete="new-password" minLength={8} required className={campo} /></label>
-          <button className={`${btnSecundario} w-full`}>Salvar senha</button>
+          <Enviar className={`${btnSecundario} w-full`}>Salvar senha</Enviar>
         </form>
       </Cartao>
 
       <p className="text-base text-stone-500">Conectado como {user.email}</p>
-      <form action={sair}><button className={`${btnPerigo} w-full`}>Sair de todos os aparelhos</button></form>
+      <form action={sair}><Enviar className={`${btnPerigo} w-full`}>Sair de todos os aparelhos</Enviar></form>
     </div>
   );
 }

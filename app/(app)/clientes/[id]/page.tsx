@@ -3,14 +3,16 @@ import { notFound } from 'next/navigation';
 import { carregarProfissional } from '@/lib/dados';
 import { dataCurta, dataPorExtenso, hora, reais, telefoneBonito } from '@/lib/format';
 import { anularPagamento } from '@/lib/actions';
-import { Cartao, Titulo, btnPrimario, btnSecundario } from '@/components/ui';
+import { Aviso, Cartao, Titulo, btnPerigo, btnPrimario, btnSecundario } from '@/components/ui';
+import { Enviar } from '@/components/Enviar';
 
 const SITUACAO: Record<string, string> = {
   aguardando_aceite: 'Aguardando aceite', aceito: 'Aceito', desistiu: 'Desistiu', encerrado: 'Encerrado',
 };
 
-export default async function ClienteDetalhe({ params }: { params: Promise<{ id: string }> }) {
+export default async function ClienteDetalhe({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ ok?: string }> }) {
   const { id } = await params;
+  const { ok } = await searchParams;
   const { supabase } = await carregarProfissional();
   const [{ data: c }, { data: pacotes }, { data: proximas }, { data: pagamentos }, { data: eventos }] = await Promise.all([
     supabase.from('clientes').select('id, nome, telefone').eq('id', id).maybeSingle(),
@@ -25,6 +27,8 @@ export default async function ClienteDetalhe({ params }: { params: Promise<{ id:
   return (
     <div className="space-y-4">
       <Titulo voltar="/clientes">{c.nome}</Titulo>
+      {ok === 'novo' && <Aviso ok={<>Cliente salvo. Próximo passo: <Link href={`/clientes/${id}/pacote`} className="font-semibold underline">criar um pacote</Link> ou <Link href={`/agenda/nova?cliente=${id}`} className="font-semibold underline">marcar uma sessão avulsa</Link>.</>} />}
+      {ok === 'aceite' && <Aviso ok={<>Aceite registrado. Próximo passo: <Link href={`/agenda/nova?cliente=${id}`} className="font-semibold underline">marcar a primeira sessão</Link>.</>} />}
       <p className="-mt-3 text-lg text-stone-600">{telefoneBonito(c.telefone)} · <Link href={`/clientes/${id}/editar`} className="text-emerald-800 underline">corrigir</Link></p>
 
       {ativo ? (
@@ -61,11 +65,18 @@ export default async function ClienteDetalhe({ params }: { params: Promise<{ id:
           <h2 className="mb-2 text-lg font-bold">Pagamentos</h2>
           <ul className="space-y-2">
             {pagamentos.map((p) => (
-              <li key={p.id} className="flex items-center justify-between gap-2 text-lg">
-                <span className={p.anulado_em ? 'text-stone-400 line-through' : ''}>{dataCurta(p.recebido_em)} · {reais(p.valor_centavos)} · {p.forma === 'cartao' ? 'Cartão' : p.forma === 'pix' ? 'Pix' : 'Dinheiro'}</span>
+              <li key={p.id} className="text-lg">
+                <div className="flex-1"><span className={p.anulado_em ? 'text-stone-400 line-through' : ''}>{dataCurta(p.recebido_em)} · {reais(p.valor_centavos)} · {p.forma === 'cartao' ? 'Cartão' : p.forma === 'pix' ? 'Pix' : 'Dinheiro'}</span>
                 {!p.anulado_em && (
-                  <form action={anularPagamento}><input type="hidden" name="id" value={p.id} /><button className="text-base font-semibold text-red-800 underline">Anular</button></form>
-                )}
+                  <details className="mt-1">
+                    <summary className="inline-flex min-h-12 cursor-pointer items-center text-base font-semibold text-red-800 underline">Anular…</summary>
+                    <form action={anularPagamento} className="mt-1 rounded-xl bg-red-50 p-3">
+                      <input type="hidden" name="id" value={p.id} />
+                      <p className="mb-2 text-base text-red-900">Anular este pagamento? Ele fica riscado no histórico e o item volta a “não pago”.</p>
+                      <Enviar className={`${btnPerigo} w-full`}>Sim, anular</Enviar>
+                    </form>
+                  </details>
+                )}</div>
               </li>
             ))}
           </ul>

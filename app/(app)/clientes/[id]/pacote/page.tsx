@@ -1,6 +1,7 @@
 import { carregarProfissional } from '@/lib/dados';
 import { criarPacote } from '@/lib/actions';
 import { Aviso, Titulo, btnPrimario, campo, rotulo } from '@/components/ui';
+import { Enviar } from '@/components/Enviar';
 
 const opcao = 'flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-xl border-2 border-stone-300 text-lg font-semibold has-[:checked]:border-emerald-700 has-[:checked]:bg-emerald-50';
 
@@ -42,7 +43,7 @@ export default async function NovoPacote({ params, searchParams }: { params: Pro
         </label>
       </fieldset>
       <p className="text-base text-stone-600">Regra de cancelamento: {prof.regra_cancelamento} <a href="/ajustes" className="underline">mudar</a></p>
-      <button className={`${btnPrimario} w-full`}>Salvar e preparar resumo</button>
+      <Enviar className={`${btnPrimario} w-full`}>Salvar e preparar resumo</Enviar>
     </form>
   );
 }
