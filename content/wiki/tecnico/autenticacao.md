@@ -1,6 +1,6 @@
 # Autenticação
 
-E-mail sem senha (Supabase Auth OTP), com dois caminhos no mesmo e-mail:
+Principal: **e-mail e senha** (`signInWithPassword`; `signUp` em Criar conta; `updateUser({ password })` em Ajustes, mínimo 8). Alternativa para quem esqueceu a senha: e-mail OTP, com dois caminhos no mesmo e-mail:
 
 1. **Link mágico**: `signInWithOtp({ email, options: { emailRedirectTo: <site>/auth/callback } })`. O callback faz `exchangeCodeForSession(code)` e redireciona para `/`.
 2. **Código de 6 dígitos**: `verifyOtp({ email, token, type: 'email' })`. Necessário no PWA instalado do iPhone, onde o link abre no Safari e não no app.

@@ -4,13 +4,13 @@ O Pausa é o seu caderno de atendimentos no celular: quem são suas clientes, qu
 
 ## 1. Entrar
 
+**Com senha (o jeito normal)**
 1. Abra o endereço do Pausa no celular.
-2. Digite seu e-mail e toque em **Receber link de acesso**.
-3. Abra o e-mail e toque no link. Pronto, você está dentro.
+2. Digite e-mail e senha e toque em **Entrar**.
+3. Primeira vez? Digite e-mail e uma senha (mínimo 8 caracteres) e toque em **Criar conta**. Confirme pelo link que chega no e-mail e depois entre.
 
-O e-mail também traz um **código de 6 números**. Se o link abrir em outro navegador (comum quando o Pausa está instalado no iPhone), volte ao Pausa e digite o código.
-
-Não existe senha. Cada link vale uma vez só.
+**Sem senha (esqueci a senha)**
+Toque em **Esqueci a senha / entrar pelo link do e-mail**, receba o link (ou o código de 6 números) e entre. Depois, em **Ajustes → Senha**, defina uma nova senha.
 
 ## 2. Ajustar suas mensagens (2 minutos)
 
