@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Cabecalho } from '@/components/Cabecalho';
 import { BottomNav } from '@/components/BottomNav';
 import { estadoLicenca } from '@/lib/licenca';
 
@@ -15,13 +16,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           {licenca.aviso} <span className="underline">Ver licença</span>
         </Link>
       )}
-      <header className="mb-4 flex items-center justify-between">
-        <Link href="/" className="text-xl font-bold text-emerald-800">Pausa</Link>
-        <nav className="flex gap-4 text-base font-semibold text-stone-600">
-          <Link href="/wiki/tutoriais/primeiros-passos">Ajuda</Link>
-          <Link href="/ajustes">Ajustes</Link>
-        </nav>
-      </header>
+      <Cabecalho />
       <main>{children}</main>
       <BottomNav />
     </div>
