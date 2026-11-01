@@ -1,10 +1,10 @@
 import { carregarProfissional } from '@/lib/dados';
 import { linkWhatsApp } from '@/lib/format';
-import { salvarAjustes, sair } from '@/lib/actions';
+import { definirSenha, salvarAjustes, sair } from '@/lib/actions';
 import { Aviso, Cartao, Titulo, btnPerigo, btnPrimario, btnSecundario, campo, rotulo } from '@/components/ui';
 
-export default async function Ajustes({ searchParams }: { searchParams: Promise<{ erro?: string; salvo?: string }> }) {
-  const { erro, salvo } = await searchParams;
+export default async function Ajustes({ searchParams }: { searchParams: Promise<{ erro?: string; salvo?: string; senha?: string }> }) {
+  const { erro, salvo, senha } = await searchParams;
   const { supabase, user } = await carregarProfissional();
   const { data: p } = await supabase.from('profissionais').select('*').eq('id', user.id).single();
   const suporte = process.env.NEXT_PUBLIC_SUPORTE_WHATSAPP;
@@ -12,7 +12,7 @@ export default async function Ajustes({ searchParams }: { searchParams: Promise<
   return (
     <div className="space-y-5">
       <Titulo>Ajustes</Titulo>
-      <Aviso erro={erro} ok={salvo ? 'Salvo.' : undefined} />
+      <Aviso erro={erro} ok={senha ? 'Senha salva. Da próxima vez, entre com e-mail e senha.' : salvo ? 'Salvo.' : undefined} />
       <form action={salvarAjustes} className="space-y-4">
         <label className="block"><span className={rotulo}>Seu nome nas mensagens</span><input name="nome_mensagem" defaultValue={p?.nome_mensagem} required placeholder="Ex.: Marta Souza" className={campo} /></label>
         <label className="block"><span className={rotulo}>Especialidade no cabeçalho (opcional)</span><input name="especialidade" defaultValue={p?.especialidade ?? ''} placeholder="Ex.: massoterapia" className={campo} /></label>
@@ -27,6 +27,14 @@ export default async function Ajustes({ searchParams }: { searchParams: Promise<
         {suporte
           ? <a href={linkWhatsApp(suporte, 'Olá! Quero pedir exportação ou exclusão de dados no Pausa.')} className={`${btnSecundario} w-full`}>Pedir exportação ou exclusão</a>
           : <p className="text-base text-stone-500">Suporte ainda não configurado.</p>}
+      </Cartao>
+
+      <Cartao>
+        <h2 className="mb-2 text-lg font-bold">Senha</h2>
+        <form action={definirSenha} className="space-y-3">
+          <label className="block"><span className={rotulo}>Nova senha (mínimo 8 caracteres)</span><input type="password" name="senha" autoComplete="new-password" minLength={8} required className={campo} /></label>
+          <button className={`${btnSecundario} w-full`}>Salvar senha</button>
+        </form>
       </Cartao>
 
       <p className="text-base text-stone-500">Conectado como {user.email}</p>

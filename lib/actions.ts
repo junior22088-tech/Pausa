@@ -60,6 +60,56 @@ export async function entrarComCodigo(fd: FormData) {
   redirect('/');
 }
 
+// ---------------------------------------------------------------- Senha
+function emailValido(email: string) {
+  return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
+}
+
+export async function entrarComSenha(fd: FormData) {
+  const email = texto(fd, 'email').toLowerCase();
+  const senha = String(fd.get('senha') ?? '');
+  if (!emailValido(email) || !senha) falhou('Digite e-mail e senha.', '/login');
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
+  if (error) {
+    if (/confirm/i.test(error.message)) falhou('Confirme seu e-mail pelo link que enviamos e tente de novo.', '/login');
+    falhou('E-mail ou senha incorretos. Se ainda não tem conta, toque em Criar conta.', '/login');
+  }
+  redirect('/');
+}
+
+export async function criarConta(fd: FormData) {
+  const email = texto(fd, 'email').toLowerCase();
+  const senha = String(fd.get('senha') ?? '');
+  if (!emailValido(email)) falhou('Confira o e-mail digitado.', '/login');
+  if (senha.length < 8) falhou('A senha precisa ter pelo menos 8 caracteres.', '/login');
+  const h = await headers();
+  const origem = process.env.NEXT_PUBLIC_SITE_URL ?? `${h.get('x-forwarded-proto') ?? 'https'}://${h.get('host')}`;
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password: senha,
+    options: { emailRedirectTo: `${origem}/auth/callback` },
+  });
+  if (error) {
+    if (/already|registered|exists/i.test(error.message))
+      falhou('Esse e-mail já tem conta. Toque em Entrar, ou entre pelo link por e-mail e defina a senha em Ajustes.', '/login');
+    falhou('Não foi possível criar a conta agora. Tente em instantes.', '/login');
+  }
+  if (data.session) redirect('/');
+  redirect('/login?confirmar=1');
+}
+
+/** Para quem entrou pelo link do e-mail e quer passar a usar senha. */
+export async function definirSenha(fd: FormData) {
+  const senha = String(fd.get('senha') ?? '');
+  if (senha.length < 8) falhou('A senha precisa ter pelo menos 8 caracteres.', '/ajustes');
+  const { supabase } = await requireUser();
+  const { error } = await supabase.auth.updateUser({ password: senha });
+  if (error) falhou('Não foi possível salvar a senha. Tente outra.', '/ajustes');
+  redirect('/ajustes?senha=1');
+}
+
 export async function sair() {
   const supabase = await createClient();
   await supabase.auth.signOut({ scope: 'global' }); // sai de todos os aparelhos
