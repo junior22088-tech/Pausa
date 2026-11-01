@@ -172,9 +172,14 @@ export async function criarPacote(fd: FormData) {
   const { supabase, user } = await requireUser();
   const cliente_id = texto(fd, 'cliente_id');
   const voltar = `/clientes/${cliente_id}/pacote`;
-  const total = Number(texto(fd, 'total_sessoes') === 'outro' ? texto(fd, 'total_outro') : texto(fd, 'total_sessoes'));
+  // Número digitado vale mais que o botão: quem digitou 29 quer 29, mesmo sem tocar em "Outro".
+  const totalDigitado = texto(fd, 'total_outro').replace(/\D/g, '');
+  if (texto(fd, 'total_sessoes') === 'outro' && !totalDigitado) falhou('Digite quantas sessões tem o pacote.', voltar);
+  const total = Number(totalDigitado || texto(fd, 'total_sessoes'));
   const valor = paraCentavos(texto(fd, 'valor'));
-  const diasValidade = Number(texto(fd, 'validade_dias') === 'outro' ? texto(fd, 'validade_outro') : texto(fd, 'validade_dias'));
+  const diasDigitados = texto(fd, 'validade_outro').replace(/\D/g, '');
+  if (texto(fd, 'validade_dias') === 'outro' && !diasDigitados) falhou('Digite quantos dias vale o pacote.', voltar);
+  const diasValidade = Number(diasDigitados || texto(fd, 'validade_dias'));
   if (!Number.isInteger(total) || total < 1 || total > 100) falhou('Número de sessões entre 1 e 100.', voltar);
   if (!Number.isFinite(valor) || valor < 0) falhou('Confira o valor do pacote.', voltar);
   if (!Number.isInteger(diasValidade) || diasValidade < 1 || diasValidade > 730) falhou('Validade entre 1 e 730 dias.', voltar);
