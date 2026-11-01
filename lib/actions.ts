@@ -45,7 +45,11 @@ export async function entrar(fd: FormData) {
     email,
     options: { emailRedirectTo: `${origem}/auth/callback` },
   });
-  if (error) falhou('Não conseguimos enviar o link agora. Tente em instantes.', '/login');
+  if (error) {
+    if (error.status === 429 || /rate limit/i.test(error.message))
+      falhou('Limite de e-mails por hora atingido. Tente de novo em cerca de 1 hora, ou entre com sua senha.', '/login?modo=link');
+    falhou('Não conseguimos enviar o link agora. Tente em instantes.', '/login?modo=link');
+  }
   redirect(`/login?enviado=1&email=${encodeURIComponent(email)}`);
 }
 
@@ -94,6 +98,8 @@ export async function criarConta(fd: FormData) {
   if (error) {
     if (/already|registered|exists/i.test(error.message))
       falhou('Esse e-mail já tem conta. Toque em Entrar, ou entre pelo link por e-mail e defina a senha em Ajustes.', '/login');
+    if (error.status === 429 || /rate limit/i.test(error.message))
+      falhou('Limite de e-mails por hora atingido. Tente de novo em cerca de 1 hora.', '/login');
     falhou('Não foi possível criar a conta agora. Tente em instantes.', '/login');
   }
   if (data.session) redirect('/');
