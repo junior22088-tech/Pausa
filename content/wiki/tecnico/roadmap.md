@@ -4,7 +4,7 @@ O que ficou fora desta versão e o sinal que justificaria trazer cada item de vo
 
 | Item | Gatilho para reconsiderar |
 |---|---|
-| Ficha de saúde / anotações | pedido recorrente **e** parecer jurídico sobre dado sensível |
+| Anamnese personalizada (modelos próprios) | modelo padrão em uso; parecer jurídico sobre o texto de consentimento |
 | Importar contatos | profissionais com mais de 50 clientes desistindo no cadastro |
 | Push / PWA obrigatório | evidência de que lembretes esquecidos causam faltas |
 | Exportação/exclusão no app | volume de pedidos LGPD que tome mais de 1 h/mês |

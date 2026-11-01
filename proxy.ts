@@ -41,6 +41,11 @@ export async function proxy(request: NextRequest) {
     url.pathname = '/login';
     return NextResponse.redirect(url);
   }
+  // Ficha de saúde: o navegador não guarda cópia.
+  if (path.includes('/anamnese')) {
+    response.headers.set('Cache-Control', 'no-store, max-age=0');
+    response.headers.set('Referrer-Policy', 'no-referrer');
+  }
   return response;
 }
 

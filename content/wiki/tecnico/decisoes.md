@@ -8,7 +8,7 @@
 | 4 | Saldo calculado (view), nunca guardado | correções se propagam sozinhas | contador na tabela |
 | 5 | Eventos append-only; pagamentos anulados, não apagados | confiança e auditoria | edição livre |
 | 6 | Cancelamento com desconto = `cancelada` + `desconta` | não mente que a sessão aconteceu | marcar como "feita" |
-| 7 | Sem ficha de saúde nem campo livre | evita dado sensível (LGPD) | anamnese |
+| 7 | Anamnese só com consentimento próprio, cifrada no app e com senha para abrir (antes: sem ficha de saúde) | pedido das profissionais; dado sensível exige proteção reforçada | texto aberto no banco; criptografia só do disco |
 | 8 | Login por e-mail OTP + código | sem senha; funciona no PWA do iPhone | senha; só link |
 | 9 | Pagamento só anotado | entrevistas: profissionais recebem via Pix e não querem cobrar pelo app | gateway integrado |
 | 10 | Wiki em `/wiki` no próprio Next | roda na Vercel sem servidor extra | Wiki.js (exige servidor e banco persistentes) |

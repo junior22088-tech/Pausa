@@ -106,6 +106,31 @@ export default async function Galeria({ searchParams }: { searchParams: Promise<
     const futuros = [{ id: 'b1', data_inicio: '2026-11-20', data_fim: '2026-11-20', dia_inteiro: true, inicio_min: null, fim_min: null, motivo: 'Curso' }];
     const afetadas = [{ id: 's9', inicio: '2026-11-20T13:00:00.000Z', duracao_min: 60, clientes: { nome: 'Beatriz Lima', telefone: '5511912345678' } }];
     conteudo = <TelaFolgas futuros={semDados ? [] : futuros} afetadasPor={() => afetadas} prof={PROF} hoje="2026-11-01" mostrarForm={semDados || aba === 'nova'} nova={aba === 'nova' ? '1' : undefined} />;
+  } else if (tela === 'anamnese') {
+    const { MODELO_PADRAO, alertas } = await import('@/lib/anamnese-modelo');
+    const ac = await import('@/lib/acoes-anamnese');
+    const { TelaAnamnese } = await import('@/components/telas/Anamnese');
+    const respostas = {
+      gestante: { valor: 'nao' }, pressao: { valor: 'sim', detalhe: 'Alta, controlada com remédio' }, circulacao: { valor: 'nao' }, anticoagulante: { valor: 'nao' },
+      cirurgia: { valor: 'nao' }, lesao: { valor: 'sim', detalhe: 'Ombro direito' }, pele: { valor: 'nao' }, alergia_produtos: { valor: 'sim', detalhe: 'Óleo de amêndoas' },
+      febre: { valor: 'nao' }, tratamento: { valor: 'nao' }, medicamentos: { valor: 'nao' },
+      objetivo: { valor: 'Aliviar dor ou tensão' }, pressao_toque: { valor: 'Média' }, evitar: { valor: 'Pés' },
+    };
+    const estado = (aba === 'pedido' ? 'sem_consentimento' : aba === 'bloqueada' ? 'bloqueada' : 'aberta') as 'aberta';
+    conteudo = (
+      <TelaAnamnese
+        d={{
+          cliente: { id: 'c1', nome: 'Ana Paula Ribeiro' }, estado, pedidoEnviado: true,
+          pedido: { href: WA, registrar: ac.registrarPedidoAnamnese.bind(null, 'c1', 'x') },
+          consentimento: { data: '01/11/2026, 10:12', resposta: 'AUTORIZO' }, modelo: MODELO_PADRAO,
+          respostas: aba === 'editar' ? respostas : respostas, alertas: alertas(MODELO_PADRAO, respostas),
+          versoes: [{ versao: 2, data: '01/11/2026, 10:40' }, { versao: 1, data: '20/10/2026, 09:05' }],
+          acessos: [{ acao: 'abriu', data: '01/11/2026, 10:41' }, { acao: 'salvou', data: '01/11/2026, 10:40' }, { acao: 'autorizou', data: '20/10/2026, 09:00' }],
+          editar: aba === 'editar',
+        }}
+        acoes={{ autorizar: ac.marcarAutorizacaoAnamnese, desbloquear: ac.desbloquearAnamnese, bloquear: ac.bloquearAnamnese, salvar: ac.salvarAnamnese, revogar: ac.revogarEApagarAnamnese }}
+      />
+    );
   } else if (tela === 'novo-cliente') {
     conteudo = <NovoCliente searchParams={Promise.resolve({})} />;
   } else if (tela === 'resumo') {

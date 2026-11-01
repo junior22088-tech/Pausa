@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { CalendarClock, Check, ChevronDown, ChevronLeft, ChevronRight, CircleDollarSign, MessageCircle, RotateCcw, XCircle } from 'lucide-react';
+import { CalendarClock, Check, ChevronDown, ChevronLeft, ChevronRight, CircleDollarSign, MessageCircle, RotateCcw, ShieldCheck, XCircle } from 'lucide-react';
 import { Avatar, Aviso, Chip, btnPequeno, btnPerigo, btnPrimario, btnSecundario, btnTexto, rotulo } from '@/components/ui';
 import { Enviar } from '@/components/Enviar';
 import { WhatsAppButton } from '@/components/WhatsAppButton';
@@ -15,6 +15,8 @@ export type SessaoDados = {
   servico?: string | null; fim?: string | null;
   /** A sessão cai numa folga/bloqueio: texto do motivo e link do aviso no WhatsApp. */
   folga?: { texto: string; avisoHref: string } | null;
+  /** Estado da anamnese (sem conteúdo): para lembrar de conferir antes de atender. */
+  anamnese?: 'preenchida' | 'autorizada' | 'sem' | null;
 };
 
 type Acao = (fd: FormData) => Promise<void>;
@@ -77,6 +79,14 @@ export function TelaSessao({
           </div>
         </div>
       </section>
+
+      {s.anamnese && s.situacao === 'marcada' && (
+        <Link href={`/clientes/${s.cliente.id}/anamnese`} className="flex min-h-12 items-center gap-2 rounded-2xl bg-white px-4 py-2 text-[0.95rem] font-semibold text-emerald-800 shadow-sm ring-1 ring-stone-200/80">
+          <ShieldCheck className="size-5 shrink-0" aria-hidden />
+          <span className="flex-1">{s.anamnese === 'preenchida' ? 'Conferir anamnese antes de atender' : s.anamnese === 'autorizada' ? 'Preencher anamnese' : 'Pedir autorização da anamnese'}</span>
+          <ChevronRight className="size-4 shrink-0 text-stone-400" aria-hidden />
+        </Link>
+      )}
 
       {s.folga && s.situacao === 'marcada' && (
         <div role="alert" className="rounded-2xl bg-amber-50 p-3 ring-1 ring-amber-200">

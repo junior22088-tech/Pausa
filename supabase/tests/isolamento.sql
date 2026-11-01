@@ -101,6 +101,34 @@ begin
   end;
 end $$;
 
+-- Anamnese: só com consentimento; versões não mudam; acesso só cresce -----------
+do $$ begin
+  begin
+    insert into public.anamneses (cliente_id, versao, conteudo_cifrado) values ('aaaaaaaa-0000-0000-0000-000000000001', 1, 'v1:xx');
+    raise exception 'ISOLAMENTO FALHOU: gravou anamnese sem consentimento';
+  exception when raise_exception then
+    if sqlerrm not like 'sem consentimento%' then raise; end if;
+  end;
+  insert into public.anamnese_consentimentos (cliente_id, texto_enviado, hash_sha256) values ('aaaaaaaa-0000-0000-0000-000000000001', 'texto', 'hash');
+  insert into public.anamneses (cliente_id, versao, conteudo_cifrado) values ('aaaaaaaa-0000-0000-0000-000000000001', 1, 'v1:xx');
+  begin
+    insert into public.anamneses (cliente_id, versao, conteudo_cifrado) values ('aaaaaaaa-0000-0000-0000-000000000001', 2, 'texto aberto');
+    raise exception 'ISOLAMENTO FALHOU: aceitou anamnese sem cifra';
+  exception when check_violation then null;
+  end;
+  begin
+    update public.anamneses set conteudo_cifrado = 'v1:yy';
+    raise exception 'ISOLAMENTO FALHOU: versão de anamnese foi alterada';
+  exception when insufficient_privilege then null;
+  end;
+  insert into public.anamnese_acessos (cliente_id, acao) values ('aaaaaaaa-0000-0000-0000-000000000001', 'abriu');
+  begin
+    delete from public.anamnese_acessos;
+    raise exception 'ISOLAMENTO FALHOU: registro de acesso foi apagado';
+  exception when insufficient_privilege then null;
+  end;
+end $$;
+
 -- Profissional B não vê nem mexe em nada da A ---------------------------------
 set local request.jwt.claims = '{"sub":"22222222-2222-2222-2222-222222222222"}';
 
@@ -115,6 +143,9 @@ begin
   assert (select count(*) from public.profissionais) = 1, 'ISOLAMENTO FALHOU: B vê outros perfis';
   assert (select count(*) from public.servicos) = 0, 'ISOLAMENTO FALHOU: B vê serviços da A';
   assert (select count(*) from public.pacote_itens) = 0, 'ISOLAMENTO FALHOU: B vê itens de pacote da A';
+  assert (select count(*) from public.anamneses) = 0, 'ISOLAMENTO FALHOU: B vê anamnese da A';
+  assert (select count(*) from public.anamnese_consentimentos) = 0, 'ISOLAMENTO FALHOU: B vê consentimento da A';
+  assert (select count(*) from public.anamnese_acessos) = 0, 'ISOLAMENTO FALHOU: B vê acessos da A';
   assert (select count(*) from public.pacote_itens_saldo) = 0, 'ISOLAMENTO FALHOU: B vê saldo de itens da A';
   assert (select count(*) from public.horarios_semana) = 7, 'ISOLAMENTO FALHOU: B vê horários da A (ou não tem os seus)';
 
@@ -143,6 +174,19 @@ do $$ begin
     raise exception 'ISOLAMENTO FALHOU: B usou serviço da A';
   exception when raise_exception then
     if sqlerrm not like 'serviço de outro profissional%' then raise; end if;
+  end;
+  -- B não grava anamnese nem consentimento para cliente da A.
+  begin
+    insert into public.anamnese_consentimentos (cliente_id, texto_enviado, hash_sha256) values ('aaaaaaaa-0000-0000-0000-000000000001', 'x', 'x');
+    raise exception 'ISOLAMENTO FALHOU: B registrou consentimento para cliente da A';
+  exception when raise_exception then
+    if sqlerrm not like 'cliente de outro profissional%' then raise; end if;
+  end;
+  begin
+    insert into public.anamneses (cliente_id, versao, conteudo_cifrado) values ('aaaaaaaa-0000-0000-0000-000000000001', 9, 'v1:x');
+    raise exception 'ISOLAMENTO FALHOU: B gravou anamnese para cliente da A';
+  exception when raise_exception then
+    if sqlerrm not like 'cliente de outro profissional%' then raise; end if;
   end;
   -- B não põe item no pacote da A.
   begin

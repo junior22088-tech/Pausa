@@ -37,6 +37,12 @@ const CAPTURAS = [
   ['marcar-fora.webp', '/dev/telas?tela=marcar&vazio=fora', 'text=Fora do expediente'],
   ['sessao.webp', '/dev/telas?tela=sessao', 'button:has-text("Marcar como feita")'],
   ['sessao-folga.webp', '/dev/telas?tela=sessao&aba=folga', 'text=Esta sessão cai numa folga'],
+  ['anamnese-pedido.webp', '/dev/telas?tela=anamnese&aba=pedido', 'button:has-text("Ela autorizou")', { rolar: 'button:has-text("Ela autorizou")' }],
+  ['anamnese-bloqueada.webp', '/dev/telas?tela=anamnese&aba=bloqueada', 'input[name="senha"]'],
+  ['anamnese-preencher.webp', '/dev/telas?tela=anamnese&aba=editar', 'div.group\\/c >> nth=1'],
+  ['anamnese-ficha.webp', '/dev/telas?tela=anamnese', 'text=Atenção antes de atender'],
+  ['anamnese-apagar.webp', '/dev/telas?tela=anamnese', 'summary:has-text("Cliente pediu para apagar"), button:has-text("Cliente pediu para apagar")', { rolar: 'text=Registro de acesso' }],
+  ['cliente-anamnese.webp', '/dev/telas?tela=ficha', 'a[href="/clientes/c1/anamnese"]', { rolar: 'a[href="/clientes/c1/anamnese"]' }],
   ['sessao-saldo.webp', '/dev/telas?tela=saldo', 'a:has-text("Enviar saldo"), button:has-text("Enviar saldo")'],
 ];
 

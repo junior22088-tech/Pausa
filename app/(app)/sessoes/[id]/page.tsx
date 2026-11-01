@@ -26,6 +26,11 @@ export default async function Sessao({ params, searchParams }: { params: Promise
       ? await supabase.from('pacotes_saldo').select('saldo').eq('id', s.pacote_id).maybeSingle()
       : { data: null };
 
+  const [{ data: consentimento }, { data: temAnamnese }] = await Promise.all([
+    supabase.from('anamnese_consentimentos').select('id').eq('cliente_id', s.cliente_id).is('revogado_em', null).limit(1).maybeSingle(),
+    supabase.from('anamneses').select('id').eq('cliente_id', s.cliente_id).limit(1).maybeSingle(),
+  ]);
+
   return (
     <TelaSessao
       erro={erro}
@@ -44,6 +49,7 @@ export default async function Sessao({ params, searchParams }: { params: Promise
         lembreteAberto: !!s.lembrete_aberto_em,
         servico: s.servicos?.nome ?? s.pacote_itens?.nome ?? null,
         fim: hhmm(ini + s.duracao_min),
+        anamnese: temAnamnese ? 'preenchida' : consentimento ? 'autorizada' : 'sem',
         folga: folgaTexto ? { texto: folgaTexto, avisoHref: linkWhatsApp(s.clientes.telefone, msgRemarcarPorFolga(prof, s.clientes.nome, s.inicio)) } : null,
         whatsappHref: linkWhatsApp(s.clientes.telefone, msgLembrete(prof, s.clientes.nome, s.inicio, 'com antecedência')),
       }}

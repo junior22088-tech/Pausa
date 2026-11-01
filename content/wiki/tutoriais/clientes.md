@@ -15,7 +15,7 @@ Para corrigir nome ou telefone, toque em **Editar**, no topo. A correção fica 
 :::
 
 :::atencao
-Não anote informações de saúde no Pausa. Ele não tem ficha de saúde nem campo de anotações livres nesta versão, de propósito.
+Não anote informações de saúde no cadastro. Elas vão na [Anamnese](/wiki/tutoriais/anamnese), com autorização da cliente e protegidas.
 :::
 
 :::dica

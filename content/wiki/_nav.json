@@ -56,9 +56,14 @@
   {
     "id": "dia-a-dia",
     "titulo": "Dia a dia",
-    "descricao": "Lembretes, pagamentos e correções.",
+    "descricao": "Anamnese, lembretes, pagamentos e correções.",
     "icone": "sun",
     "itens": [
+      {
+        "slug": "tutoriais/anamnese",
+        "titulo": "Anamnese (ficha de saúde)",
+        "descricao": "Autorização da cliente, ficha protegida e como apagar."
+      },
       {
         "slug": "tutoriais/lembretes",
         "titulo": "Lembretes pelo WhatsApp",

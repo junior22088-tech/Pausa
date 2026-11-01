@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { CalendarClock, ChevronLeft, CalendarPlus, CircleDollarSign, History, MessageCircle, Package, Pencil, Plus } from 'lucide-react';
+import { CalendarClock, ChevronLeft, ChevronRight, CalendarPlus, CircleDollarSign, History, MessageCircle, Package, Pencil, Plus, ShieldCheck } from 'lucide-react';
 import {
   AcaoRapida, Abas, Avatar, Aviso, Cartao, Chip, Lista, LinhaLista, Progresso, Secao, Vazio,
   btnPequeno, btnPerigo, btnPrimario, btnSecundario, btnTexto,
@@ -15,6 +15,7 @@ export type FichaDados = {
   cliente: { id: string; nome: string; telefone: string; telefoneBonito: string };
   whatsappHref: string;
   pacote: PacoteFicha | null;
+  anamnese?: { autorizada: boolean; atualizada: string | null };
   proximas: { id: string; dia: string; hora: string }[];
   pagamentos: { id: string; data: string; valor: string; forma: string; anulado: boolean }[];
   eventos: { id: number | string; data: string; hora: string; descricao: string }[];
@@ -91,6 +92,18 @@ export function TelaFichaCliente({
             acao={<Link href={`${base}/pacote`} className={btnPrimario}><Plus className="size-5" aria-hidden />Criar pacote</Link>} />
         )}
       </Secao>
+
+      {/* Anamnese: só o estado; o conteúdo fica na tela protegida */}
+      <Link href={`${base}/anamnese`} className="flex min-h-16 items-center gap-3 rounded-2xl bg-white px-4 py-3 shadow-sm ring-1 ring-stone-200/80 hover:ring-emerald-600">
+        <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-800"><ShieldCheck className="size-5" aria-hidden /></span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-base font-semibold">Anamnese</span>
+          <span className="block text-[0.85rem] text-stone-500">
+            {!dados.anamnese?.autorizada ? 'Pedir autorização e preencher' : dados.anamnese.atualizada ? `Protegida · atualizada em ${dados.anamnese.atualizada}` : 'Autorizada · ainda não preenchida'}
+          </span>
+        </span>
+        <ChevronRight className="size-5 shrink-0 text-stone-400" aria-hidden />
+      </Link>
 
       {/* Abas */}
       <Abas

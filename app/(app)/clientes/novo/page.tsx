@@ -16,7 +16,7 @@ export default async function NovoCliente({ searchParams }: { searchParams: Prom
         <span className={rotulo}>WhatsApp com DDD</span>
         <input name="telefone" required inputMode="tel" placeholder="(11) 99999-0000" className={campo} />
       </label>
-      <p className="text-base text-stone-500">Não anote aqui informações de saúde. A ficha de saúde ainda não faz parte do app.</p>
+      <p className="text-base text-stone-500">Não anote informações de saúde aqui. Elas vão na Anamnese, na ficha da cliente, com autorização dela e protegidas.</p>
       <Enviar className={`${btnPrimario} w-full`}>Salvar</Enviar>
     </form>
   );

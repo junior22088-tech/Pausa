@@ -8,13 +8,13 @@
 2. **Nada se apaga**: correções viram eventos numa linha do tempo append-only.
 3. **Saldo calculado, nunca guardado**: a view `pacotes_saldo` é a única fonte.
 4. **Isolamento por profissional no banco** (RLS), com teste automático.
-5. **Sem dado de saúde**: não há ficha nem campo livre.
+5. **Dado de saúde só na anamnese**: com consentimento próprio, cifrado e com senha para abrir ([Segurança e LGPD](/wiki/tecnico/seguranca-e-lgpd)).
 
 ## Escopo desta versão (Must final da síntese)
 
 | Entra | Sai (por ora) |
 |---|---|
-| Login por link de uso único (+ código de 6 dígitos) | Ficha de saúde e campo livre |
+| Login por link de uso único (+ código de 6 dígitos) | Campo livre de anotações |
 | Clientes por digitação | Importação de contatos |
 | Agenda dia/semana, marcar/remarcar/cancelar | PWA obrigatório e push |
 | Pacote com saldo calculado e validade | Exportação/exclusão automáticas (manuais via suporte) |

@@ -2,7 +2,7 @@ import { carregarProfissional } from '@/lib/dados';
 import { linkWhatsApp } from '@/lib/format';
 import { definirSenha, salvarAjustes, sair } from '@/lib/actions';
 import { Aviso, Cartao, Lista, LinhaLista, Secao, Titulo, btnPerigo, btnPrimario, btnSecundario, campo, rotulo } from '@/components/ui';
-import { CalendarOff, Clock, KeyRound, Sparkles } from 'lucide-react';
+import { CalendarOff, Clock, KeyRound, ShieldCheck, Sparkles } from 'lucide-react';
 import { Enviar } from '@/components/Enviar';
 
 const icone = 'inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-800';
@@ -18,6 +18,7 @@ export function TelaAjustes({ p, email, suporte, erro }: { p: { nome_mensagem?: 
           <LinhaLista href="/ajustes/servicos" inicio={<span className={icone}><Sparkles className="size-5" aria-hidden /></span>} titulo="Serviços" subtitulo="Nome, duração e preço de cada atendimento" />
           <LinhaLista href="/ajustes/horarios" inicio={<span className={icone}><Clock className="size-5" aria-hidden /></span>} titulo="Horários de atendimento" subtitulo="Dias, horários, almoço e intervalo entre sessões" />
           <LinhaLista href="/ajustes/folgas" inicio={<span className={icone}><CalendarOff className="size-5" aria-hidden /></span>} titulo="Folgas e bloqueios" subtitulo="Dias ou horários em que você não atende" />
+          <LinhaLista href="/ajustes/anamnese" inicio={<span className={icone}><ShieldCheck className="size-5" aria-hidden /></span>} titulo="Anamnese" subtitulo="Ativar a ficha de saúde protegida" />
         </Lista>
       </Secao>
 

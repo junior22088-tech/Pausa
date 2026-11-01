@@ -130,3 +130,15 @@ export function msgRemarcarPorFolga(p: Prof, cliente: string, inicio: string) {
     'Podemos remarcar? Me diga um dia e horário que fica bom para você.',
   ].join('\n');
 }
+
+/** Pedido de autorização para a anamnese (consentimento específico, LGPD art. 11, I). Sem dado de saúde. */
+export function msgConsentimentoAnamnese(p: Prof, cliente: string) {
+  return [
+    cabecalho(p),
+    `Olá, ${cliente}! Antes da sua sessão, preciso anotar algumas informações de saúde (ficha de anamnese), como gestação, pressão, alergias, lesões e remédios.`,
+    '*Para que serve:* só para eu avaliar se a massagem é segura para você e adaptar o atendimento.',
+    '*Quem vê:* só eu. Fica guardado de forma protegida (criptografado) e não é compartilhado com ninguém.',
+    '*Por quanto tempo:* até você pedir para apagar. Você também pode pedir uma cópia ou correção a qualquer momento.',
+    'Se você autoriza, responda *AUTORIZO*.',
+  ].join('\n');
+}

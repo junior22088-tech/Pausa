@@ -21,6 +21,10 @@ export default async function ClienteDetalhe({ params, searchParams }: { params:
   if (!c) notFound();
   const ativo: any = pacotes?.find((p: any) => ['aguardando_aceite', 'aceito'].includes(p.situacao));
   const itens = ativo ? await itensDosPacotes(supabase, [ativo.id]) : [];
+  const [{ data: consentimento }, { data: ultimaAnamnese }] = await Promise.all([
+    supabase.from('anamnese_consentimentos').select('id').eq('cliente_id', id).is('revogado_em', null).limit(1).maybeSingle(),
+    supabase.from('anamneses').select('criado_em').eq('cliente_id', id).order('versao', { ascending: false }).limit(1).maybeSingle(),
+  ]);
 
   const dados: FichaDados = {
     cliente: { id: c.id, nome: c.nome, telefone: c.telefone, telefoneBonito: telefoneBonito(c.telefone) },
@@ -31,6 +35,7 @@ export default async function ClienteDetalhe({ params, searchParams }: { params:
       situacao: ativo.situacao, pago: ativo.pago, versao: ativo.versao,
       itens: itens.map((i) => ({ nome: i.nome, saldo: i.saldo, quantidade: i.quantidade })),
     } : null,
+    anamnese: { autorizada: !!consentimento, atualizada: ultimaAnamnese ? dataCurta(ultimaAnamnese.criado_em) : null },
     proximas: (proximas ?? []).map((s) => ({ id: s.id, dia: new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', weekday: 'short', day: 'numeric', month: 'long' }).format(new Date(s.inicio)).replace('.', ''), hora: hora(s.inicio) })),
     pagamentos: (pagamentos ?? []).map((p) => ({ id: p.id, data: dataCurta(p.recebido_em), valor: reais(p.valor_centavos), forma: FORMA[p.forma] ?? p.forma, anulado: !!p.anulado_em })),
     eventos: (eventos ?? []).map((e) => ({ id: e.id, data: dataCurta(e.criado_em), hora: hora(e.criado_em), descricao: e.descricao })),

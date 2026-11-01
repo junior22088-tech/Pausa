@@ -4,8 +4,9 @@
 
 - Seu e-mail e o que você preencheu em Ajustes.
 - Das clientes: **nome e WhatsApp**, sessões, pacotes, pagamentos e o histórico.
+- **Anamnese** (só se você usar e a cliente autorizar): guardada criptografada. Veja [Anamnese](/wiki/tutoriais/anamnese).
 
-O Pausa **não guarda** dados de saúde, anotações livres, conversas do WhatsApp nem dados de cartão.
+O Pausa **não guarda** conversas do WhatsApp nem dados de cartão.
 
 ## Quem vê
 
