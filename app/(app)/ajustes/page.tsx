@@ -38,6 +38,8 @@ export default async function Ajustes({ searchParams }: { searchParams: Promise<
         </form>
       </Cartao>
 
+      <a href="/instalacao" className={`${btnSecundario} w-full`}>Licença desta instalação</a>
+
       <p className="text-base text-stone-500">Conectado como {user.email}</p>
       <form action={sair}><Enviar className={`${btnPerigo} w-full`}>Sair de todos os aparelhos</Enviar></form>
     </div>

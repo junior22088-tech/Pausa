@@ -5,6 +5,7 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { createClient, requireUser } from '@/lib/supabase/server';
+import { exigirLicenca } from '@/lib/licenca';
 import { instanteSP, normalizarTelefone, paraCentavos, reais, somarDias, diaSP } from '@/lib/format';
 
 type Supa = Awaited<ReturnType<typeof createClient>>;
@@ -24,6 +25,13 @@ async function evento(
     depois: e.depois ?? null,
   });
   if (error) throw new Error('Não foi possível registrar o histórico. Tente de novo.');
+}
+
+/** Usuário logado + licença ativa. Toda ação que grava dados começa por aqui. */
+async function escritor() {
+  const r = await requireUser();
+  await exigirLicenca();
+  return r;
 }
 
 function texto(fd: FormData, campo: string) {
@@ -124,7 +132,7 @@ export async function sair() {
 
 // ---------------------------------------------------------------- Ajustes
 export async function salvarAjustes(fd: FormData) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await escritor();
   const dados = {
     nome_mensagem: texto(fd, 'nome_mensagem'),
     especialidade: texto(fd, 'especialidade') || null,
@@ -141,7 +149,7 @@ export async function salvarAjustes(fd: FormData) {
 
 // ---------------------------------------------------------------- Clientes
 export async function criarCliente(fd: FormData) {
-  const { supabase } = await requireUser();
+  const { supabase } = await escritor();
   const nome = texto(fd, 'nome');
   const telefone = normalizarTelefone(texto(fd, 'telefone'));
   if (!nome) falhou('Escreva o nome do cliente.', '/clientes/novo');
@@ -154,7 +162,7 @@ export async function criarCliente(fd: FormData) {
 }
 
 export async function corrigirCliente(fd: FormData) {
-  const { supabase } = await requireUser();
+  const { supabase } = await escritor();
   const id = texto(fd, 'id');
   const nome = texto(fd, 'nome');
   const telefone = normalizarTelefone(texto(fd, 'telefone'));
@@ -169,7 +177,7 @@ export async function corrigirCliente(fd: FormData) {
 
 // ---------------------------------------------------------------- Pacotes
 export async function criarPacote(fd: FormData) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await escritor();
   const cliente_id = texto(fd, 'cliente_id');
   const voltar = `/clientes/${cliente_id}/pacote`;
   // Número digitado vale mais que o botão: quem digitou 29 quer 29, mesmo sem tocar em "Outro".
@@ -214,7 +222,7 @@ export async function registrarEnvioResumo(pacoteId: string, textoEnviado: strin
 }
 
 export async function marcarAceite(fd: FormData) {
-  const { supabase } = await requireUser();
+  const { supabase } = await escritor();
   const pacoteId = texto(fd, 'pacote_id');
   const resposta = texto(fd, 'resposta') || null;
   const { data: p } = await supabase.from('pacotes').select('cliente_id, situacao').eq('id', pacoteId).single();
@@ -242,7 +250,7 @@ export async function marcarAceite(fd: FormData) {
 }
 
 export async function marcarDesistencia(fd: FormData) {
-  const { supabase } = await requireUser();
+  const { supabase } = await escritor();
   const pacoteId = texto(fd, 'pacote_id');
   const { data: p } = await supabase.from('pacotes').select('cliente_id').eq('id', pacoteId).single();
   if (!p) falhou('Pacote não encontrado.', '/');
@@ -261,7 +269,7 @@ async function pacoteAtivo(supabase: Supa, clienteId: string) {
 }
 
 export async function marcarSessao(fd: FormData) {
-  const { supabase } = await requireUser();
+  const { supabase } = await escritor();
   const cliente_id = texto(fd, 'cliente_id');
   const dia = texto(fd, 'dia');
   const h = texto(fd, 'hora');
@@ -285,7 +293,7 @@ export async function marcarSessao(fd: FormData) {
 }
 
 export async function remarcarSessao(fd: FormData) {
-  const { supabase } = await requireUser();
+  const { supabase } = await escritor();
   const id = texto(fd, 'id');
   const dia = texto(fd, 'dia');
   const h = texto(fd, 'hora');
@@ -300,7 +308,7 @@ export async function remarcarSessao(fd: FormData) {
 }
 
 export async function cancelarSessao(fd: FormData) {
-  const { supabase } = await requireUser();
+  const { supabase } = await escritor();
   const id = texto(fd, 'id');
   const desconta = texto(fd, 'desconta') === 'sim';
   const { data: s } = await supabase.from('sessoes').select('cliente_id, pacote_id, situacao').eq('id', id).single();
@@ -314,7 +322,7 @@ export async function cancelarSessao(fd: FormData) {
 }
 
 export async function sessaoFeita(fd: FormData) {
-  const { supabase } = await requireUser();
+  const { supabase } = await escritor();
   const id = texto(fd, 'id');
   const { data: s } = await supabase.from('sessoes').select('cliente_id, pacote_id, situacao').eq('id', id).single();
   if (!s) falhou('Sessão não encontrada.', '/');
@@ -335,7 +343,7 @@ export async function sessaoFeita(fd: FormData) {
 }
 
 export async function desfazerFeita(fd: FormData) {
-  const { supabase } = await requireUser();
+  const { supabase } = await escritor();
   const id = texto(fd, 'id');
   const { data: s } = await supabase.from('sessoes').select('cliente_id, situacao').eq('id', id).single();
   if (!s || s.situacao !== 'feita') falhou('Essa sessão não está marcada como feita.', `/sessoes/${id}`);
@@ -360,7 +368,7 @@ export async function registrarWhatsApp(sessaoId: string, tipo: 'lembrete' | 'sa
 
 // ---------------------------------------------------------------- Pagamentos
 export async function registrarPagamento(fd: FormData) {
-  const { supabase } = await requireUser();
+  const { supabase } = await escritor();
   const pacote_id = texto(fd, 'pacote_id') || null;
   const sessao_id = texto(fd, 'sessao_id') || null;
   const forma = texto(fd, 'forma');
@@ -398,7 +406,7 @@ export async function registrarPagamento(fd: FormData) {
 }
 
 export async function anularPagamento(fd: FormData) {
-  const { supabase } = await requireUser();
+  const { supabase } = await escritor();
   const id = texto(fd, 'id');
   const { data: pg } = await supabase.from('pagamentos').select('cliente_id, pacote_id, sessao_id, valor_centavos, anulado_em').eq('id', id).single();
   if (!pg || pg.anulado_em) falhou('Pagamento não encontrado ou já anulado.', '/');
@@ -408,4 +416,13 @@ export async function anularPagamento(fd: FormData) {
   await evento(supabase, { cliente_id: pg.cliente_id, entidade: 'pagamento', entidade_id: id, tipo: 'anulou', descricao: `Correção: pagamento de ${reais(pg.valor_centavos)} anulado` });
   revalidatePath('/', 'layout');
   redirect(`/clientes/${pg.cliente_id}`);
+}
+
+// ---------------------------------------------------------------- Licença
+export async function verificarLicencaAgora() {
+  await requireUser();
+  const { estadoLicenca } = await import('@/lib/licenca');
+  await estadoLicenca(true);
+  revalidatePath('/', 'layout');
+  redirect('/instalacao?verificado=1');
 }

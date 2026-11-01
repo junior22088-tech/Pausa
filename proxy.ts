@@ -1,11 +1,20 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
-import { SUPABASE_URL, SUPABASE_KEY } from '@/lib/supabase/config';
+import { CONFIGURADO, SUPABASE_URL, SUPABASE_KEY } from '@/lib/supabase/config';
 
-const PUBLICAS = ['/login', '/auth', '/wiki', '/manifest.webmanifest', '/icon'];
+const PUBLICAS = ['/login', '/auth', '/wiki', '/configurar', '/manifest.webmanifest', '/icon'];
 
 // Renova a sessão do Supabase a cada requisição e protege as telas do app.
 export async function proxy(request: NextRequest) {
+  const caminho = request.nextUrl.pathname;
+  // Instalação sem Supabase configurado: só a wiki e a página de configuração funcionam.
+  if (!CONFIGURADO) {
+    if (caminho.startsWith('/wiki') || caminho.startsWith('/configurar')) return NextResponse.next();
+    const url = request.nextUrl.clone();
+    url.pathname = '/configurar';
+    url.search = '';
+    return NextResponse.redirect(url);
+  }
   let response = NextResponse.next({ request });
   const supabase = createServerClient(
     SUPABASE_URL,
